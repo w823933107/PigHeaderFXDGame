@@ -2,7 +2,7 @@ unit uGameEx;
 
 interface
 
-uses QWorker,uGameEx.Interf,System.SysUtils;
+uses QWorker, uGameEx.Interf, System.SysUtils;
 
 type
   TGame = class(TGamebase)
@@ -19,19 +19,20 @@ implementation
 { TGame }
 
 procedure TGame.DoGame(AJob: PQJob);
-  function BindGame:Integer;
+  function BindGame: Integer;
   var
     iBind: Integer;
   begin
     Result := Obj.FindWindow('地下城与勇士', '地下城与勇士');
     if Result = 0 then
-    raise Exception.Create('no game running');
+      raise Exception.Create('no game running');
     iBind := Obj.BindWindow(Result, 'normal', 'normal', 'normal', 101);
     if iBind <> 1 then
-    raise Exception.Create('bind game error');
+      raise Exception.Create('bind game error');
   end;
 
 begin
+  BindGame;
   while not AJob.IsTerminated do
   begin
 
