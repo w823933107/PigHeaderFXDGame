@@ -7,7 +7,7 @@ unit uGame.Interf;
 
 interface
 
-uses uObj, System.SysUtils, System.Types, Spring, QWorker;
+uses uObj, System.SysUtils, System.Types, Spring, QWorker,QPlugins;
 
 const
   clWndActive = 'ffffff-000100'; // 窗口的置顶颜色值
@@ -173,11 +173,7 @@ type
     property GameConfigManager: IGameConfigManager write SetGameConfigManager;
   end;
 
-
-
-
-  // 设置为线程单例模式
-
+  // 游戏数据
   TGameData = record
     PTerminated: PBoolean;
     Hwnd: Integer;
@@ -189,17 +185,13 @@ type
   end;
 
   // 基类,提供基础服务
-  { TODO -c优化 :
-    继承出一个类,供基础服务功能使用,
-    移除对全局数据的写入权限,
-    防止服务类乱修改全局数据导致逻辑混乱 }
   TGameBase = class(TInterfacedObject)
   private
     function GetObj: IChargeObj;
     function GetTerminated: Boolean;
     function GetMyObj: TMyObj;
   protected
-  //  FJob: PQJob;
+    // FJob: PQJob;
     property MyObj: TMyObj read GetMyObj;
     property Obj: IChargeObj read GetObj;
     property Terminated: Boolean read GetTerminated; // 控制线程

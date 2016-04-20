@@ -794,7 +794,6 @@ begin
       CodeSite.Send('游戏线程');
       // RegisterGameClass; // 注册游戏功能类
       AJob.Worker.ComNeeded(); // 支持COM
-
       GameInit; // 初始化游戏
       GameLoop; // 游戏循环
       GameFinal; // 清理操作
@@ -898,7 +897,7 @@ begin
     Exit;
   end;
   FIsRunning := True;
-
+  Workers.Post(MainProc, nil);
 end;
 
 procedure TGame.Stop;

@@ -12,6 +12,9 @@
         <Projects Include="秀秀.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="pigheader.dproj">
+            <Dependencies/>
+        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -47,14 +50,23 @@
     <Target Name="秀秀:Make">
         <MSBuild Projects="秀秀.dproj" Targets="Make"/>
     </Target>
+    <Target Name="pigheader">
+        <MSBuild Projects="pigheader.dproj"/>
+    </Target>
+    <Target Name="pigheader:Clean">
+        <MSBuild Projects="pigheader.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="pigheader:Make">
+        <MSBuild Projects="pigheader.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="猪头鲁路修版;suxin;秀秀"/>
+        <CallTarget Targets="猪头鲁路修版;suxin;秀秀;pigheader"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="猪头鲁路修版:Clean;suxin:Clean;秀秀:Clean"/>
+        <CallTarget Targets="猪头鲁路修版:Clean;suxin:Clean;秀秀:Clean;pigheader:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="猪头鲁路修版:Make;suxin:Make;秀秀:Make"/>
+        <CallTarget Targets="猪头鲁路修版:Make;suxin:Make;秀秀:Make;pigheader:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

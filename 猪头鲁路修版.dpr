@@ -18,9 +18,7 @@ uses
   uGame.Skill in 'uGame.Skill.pas',
   uGame.CheckTimeOut in 'uGame.CheckTimeOut.pas',
   uGame.PassGame in 'uGame.PassGame.pas',
-  uGame.OutMap in 'uGame.OutMap.pas',
-  uGameEx in 'uGameEx.pas',
-  uGameEx.Interf in 'uGameEx.Interf.pas';
+  uGame.OutMap in 'uGame.OutMap.pas';
 
 {$R *.res}
 

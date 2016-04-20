@@ -132,6 +132,7 @@ type
     class function CreateFreeObj: IFreeObj;
     class function CreateChargeObj: IChargeObj;
     class function CreateTsObj: ITsObj;
+    class function CreateMyObj(aObj: IChargeObj): TMyObj;
   end;
 
   IFreeObj = interface(IDispatch)
@@ -1788,6 +1789,11 @@ begin
     TObjConfig.FreeFullPath) as IFreeObj;
   if not Assigned(Result) then
     raise Exception.Create('对象创建失败！');
+end;
+
+class function TObjFactory.CreateMyObj(aObj: IChargeObj): TMyObj;
+begin
+  Result := TMyObj.Create(aObj);
 end;
 
 class function TObjFactory.CreateTsObj: ITsObj;
