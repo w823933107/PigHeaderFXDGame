@@ -4,8 +4,7 @@ unit uGame;
 interface
 
 uses uGame.Interf, uObj, QWorker, Spring.Container,
-  System.SysUtils, Winapi.Windows, System.Types, System.Rtti,
-  System.Diagnostics;
+  System.SysUtils, Winapi.Windows, System.Types, System.Rtti;
 
 // 游戏主体逻辑类
 type

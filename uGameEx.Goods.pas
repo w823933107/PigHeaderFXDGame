@@ -1,8 +1,9 @@
-unit uGame.Goods;
+unit uGameEx.Goods;
 
 interface
 
-uses uGame.Interf, System.Types, System.SysUtils;
+uses uGameEx.Interf, System.Types, System.SysUtils, System.Diagnostics,
+  CodeSiteLogging;
 
 type
   TGoods = class(TGameBase, IGoods)
@@ -16,7 +17,7 @@ type
     function GetPointByRect(const aSearch: TRect): TPoint;
     function GetPointByDm: TPoint; // 依赖于插件算法获取坐标
     function GetPointByManPoint: TPoint; // 依赖于人物坐标获取最近坐标
- public
+  public
     procedure SetManPoint(const value: TPoint);
     function GetIsArrivedGoods: Boolean; // 此函数每次都会进行计时检测
     function GetPoint: TPoint;
@@ -141,5 +142,12 @@ begin
   if FManPoint <> value then
     FManPoint := value;
 end;
+
+initialization
+
+
+
+finalization
+
 
 end.

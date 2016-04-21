@@ -1,8 +1,8 @@
-unit uGame.Monster;
+unit uGameEx.Monster;
 
 interface
 
-uses uGame.Interf, System.Types, CodeSiteLogging;
+uses uGameEx.Interf, System.Types, System.Diagnostics, CodeSiteLogging;
 
 type
 
@@ -344,5 +344,12 @@ procedure TMonster.SetManPoint(const value: TPoint);
 begin
   FManPoint := value;
 end;
+
+initialization
+
+
+
+finalization
+
 
 end.

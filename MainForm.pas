@@ -103,20 +103,9 @@ implementation
 {$R *.dfm}
 
 
-uses CodeSiteLogging, uObj, uGame.PassGame, QPlugins,
-  qplugins_vcl_messages {, qlang};
+uses CodeSiteLogging, uObj, uGame.PassGame {, qlang};
 
-type
 
-  TGameForm = class(TQService)
-  public
-    constructor Create();
-    destructor Destroy; override;
-    procedure Show;
-    procedure Start;
-    procedure Stop;
-    procedure SaveConfig; // ±£¥Ê≈‰÷√Œƒº˛
-  end;
 
 procedure TForm1.btnStartClick(Sender: TObject);
 begin
@@ -304,47 +293,16 @@ begin
   Game.Stop;
 end;
 
-{ TGameForm }
 
-constructor TGameForm.Create;
-begin
- // inherited;
-end;
-
-destructor TGameForm.Destroy;
-begin
-
-  inherited;
-end;
-
-procedure TGameForm.SaveConfig;
-begin
-
-end;
-
-procedure TGameForm.Show;
-begin
-
-end;
-
-procedure TGameForm.Start;
-begin
-
-end;
-
-procedure TGameForm.Stop;
-begin
-
-end;
 
 initialization
 
 
-//RegisterServices('Services/IForm', [TGameForm.Create(IForm, 'Form')]);
+
 
 finalization
 
-//UnregisterServices('Services/IForm', ['Form']);
+
 
 
 end.

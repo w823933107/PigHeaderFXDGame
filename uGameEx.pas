@@ -2,7 +2,8 @@ unit uGameEx;
 
 interface
 
-uses QWorker, uGameEx.Interf, System.SysUtils, uObj, Winapi.Windows, QString;
+uses QWorker, uGameEx.Interf, System.SysUtils, uObj, Winapi.Windows,
+  Spring.Container, CodeSiteLogging, Vcl.Forms, uGameEx.RegisterClass;
 
 type
   TGame = class(TGamebase, IGame)
@@ -10,28 +11,82 @@ type
     FObj: IChargeObj;
     FJob: IntPtr;
     FGameData: PGameData;
-    procedure DoGame(AJob: PQJob); // 主逻辑
   private
-    procedure SetGameConfigManager(const value: IGameConfigManager);
+    FGameConfihManager: IGameConfigManager;
+    FMap: IMap;
+    FMove: IMove;
+  private
+    procedure GameJob(AJob: PQJob); // 主逻辑作业
+    procedure CheckJob(AJob: PQJob); // 检测作业
+    procedure LoopHandle; // 循环处理
+    procedure InMapHandle;
+    procedure OutMapHandle;
+    procedure UnknownHandle;
+    procedure CreateGameObjs(aGameData: PGameData); // 创建对象集
   public
-    constructor Create(const AId: TGuid; AName: QStringW); override;
-
+    constructor Create(); overload;
+    // constructor Create(const AId: TGuid; AName: QStringW); overload; override;
     destructor Destroy; override;
     procedure Start; // 配置信息
     procedure Stop;
+    procedure SetApplicationHanlde(aHandle: THandle);
+    function Guard(): Boolean;
   end;
 
 implementation
 
 { TGame }
 
-constructor TGame.Create(const AId: TGuid; AName: QStringW);
+procedure TGame.CheckJob(AJob: PQJob);
+var
+  x, y: OleVariant;
+  iRet: Integer;
+  hGame: Integer;
 begin
-  inherited;
+  while not AJob.IsTerminated do
+  begin
+    // 检测客户端是否存在
+    hGame := FObj.FindWindow('地下城与勇士', '地下城与勇士');
+    if hGame = 0 then
+      warnning;
+    // 检测网络状态
+    iRet := FObj.FindStr(0, 0, 800, 600, '网络连接中断', clStrWhite, 1.0, x, y);
+    if iRet > -1 then
+      warnning;
+    // 检测窗口激活状态
+    if FObj.GetWindowState(hGame, 1) = 0 then
+      FObj.SetWindowState(hGame, 1);
+    Sleep(2000);
+  end;
+
+end;
+
+constructor TGame.Create;
+begin
   New(FGameData);
   Obj := TObjFactory.CreateChargeObj;
-  Obj.SetDict(0, '.\Main.txt'); // 设置字库
-  Obj.SetPath('.\Pic'); // 设置路径
+  Obj.SetDict(0, sDictPath); // 设置字库
+  Obj.SetPath(sPicPath); // 设置路径
+  // // 创建配置管理器
+  FGameConfihManager := GlobalContainer.Resolve<IGameConfigManager>;
+end;
+
+// constructor TGame.Create(const AId: TGuid; AName: QStringW);
+// begin
+// New(FGameData);
+// Obj := TObjFactory.CreateChargeObj;
+// Obj.SetDict(0, sDictPath); // 设置字库
+// Obj.SetPath(sPicPath); // 设置路径
+// // // 创建配置管理器
+// FGameConfihManager := GlobalContainer.Resolve<IGameConfigManager>;
+// end;
+
+procedure TGame.CreateGameObjs(aGameData: PGameData);
+begin
+  FMap := GlobalContainer.Resolve<IMap>;
+  FMap.SetGameData(aGameData);
+  FMove := GlobalContainer.Resolve<IMove>;
+  FMove.SetGameData(aGameData);
 end;
 
 destructor TGame.Destroy;
@@ -40,7 +95,7 @@ begin
   Dispose(FGameData);
 end;
 
-procedure TGame.DoGame(AJob: PQJob);
+procedure TGame.GameJob(AJob: PQJob);
 // 绑定游戏
   function BindGame: Integer;
   var
@@ -48,39 +103,109 @@ procedure TGame.DoGame(AJob: PQJob);
   begin
     Result := Obj.FindWindow('地下城与勇士', '地下城与勇士');
     if Result = 0 then
-      raise Exception.Create('no game running');
+      raise EGame.Create('no game running');
     iBind := Obj.BindWindow(Result, 'normal', 'normal', 'normal', 101);
     if iBind <> 1 then
-      raise Exception.Create('bind game error');
+      raise EGame.Create('bind game error');
     Obj.SetWindowState(Result, 1); // 激活游戏窗口
   end;
 
 begin
   try
     try
+      CodeSite.Send('run');
       AJob.Worker.ComNeeded(); // 初始化COM库
+      // FGameData^.GameConfig := FGameConfihManager.Config; // 读取配置文件
       FGameData^.Hwnd := BindGame; // 保存游戏窗口句柄
-      while not AJob.IsTerminated do
-      begin
-
-        Sleep(20);
-      end;
+      // FGameData^.Job := AJob; // 保存主线程的作业对象
+      // GameData := FGameData; // 保存到当前类中,为了防止这个类以外使用而不出错
+      // CreateGameObjs(FGameData); // 创建需要使用的对象
+      // LoopHandle; // 循环处理
     except
-      on E: Exception do
-        RunInMainThread(
-          procedure
-          begin
-            MessageBoxW(0, PWideChar(E.Message), '警告', MB_OK + MB_ICONWARNING);
-          end);
+      on E: EGame do
+        Application.MessageBox(PWideChar(E.Message), '警告');
     end;
   finally
-    Workers.Clear; // 清除所有作业
+    // Workers.Clear; // 清除所有作业
   end;
 end;
 
-procedure TGame.SetGameConfigManager(const value: IGameConfigManager);
+function TGame.Guard(): Boolean;
+var
+  iRet: Integer;
+  sPath: string;
+begin
+  Result := False;
+  sPath := GetCurrentDir;
+  if FGameConfihManager.Config.bAutoRunGuard then
+  begin
+    iRet := Obj.SetSimMode(2);
+    if iRet <> 1 then
+    begin
+      Application.MessageBox(PChar('硬件驱动加载失败,错误码:' + iRet.ToString), '错误');
+      Application.Terminate;
+    end;
+    iRet := Obj.DmGuard(1, 'f1');
+    if iRet <> 1 then
+    begin
+      Application.MessageBox(PChar('f1盾开启失败,错误码:' + iRet.ToString), '错误');
+      Application.Terminate;
+    end;
+    ChDir(sPath);
+    iRet := Obj.DmGuard(1, 'block');
+    if iRet <> 1 then
+    begin
+      Application.MessageBox(PChar('block驱动加载失败,错误码:' + iRet.ToString), '错误');
+      Application.Terminate;
+    end;
+    Result := True;
+  end;
+end;
+
+procedure TGame.InMapHandle;
+begin
+  case FMap.MiniMap of
+    mmUnknown:
+      begin
+
+      end;
+    mmClickCards:
+      ;
+    mmPassGame:
+      ;
+  else
+
+  end;
+
+end;
+
+procedure TGame.LoopHandle;
+
+begin
+  Workers.Post(CheckJob, nil);
+  while not Terminated do
+  begin
+    CloseGameWindows; // 关闭所有窗口
+    case FMap.LargeMap of
+      lmUnknown:
+        UnknownHandle;
+      lmOut:
+        OutMapHandle;
+      lmIn:
+        InMapHandle;
+    end;
+    Sleep(GameData.GameConfig.iLoopDelay); // 循环延时
+  end;
+end;
+
+procedure TGame.OutMapHandle;
 begin
 
+end;
+
+procedure TGame.SetApplicationHanlde(aHandle: THandle);
+begin
+  Application.Handle := aHandle;
 end;
 
 procedure TGame.Start;
@@ -90,7 +215,7 @@ begin
   // 作业不存在时执行
   if not Workers.PeekJobState(FJob, JobState) then
   begin
-    FJob := Workers.Post(DoGame, nil);
+    FJob := Workers.Post(GameJob, nil);
   end;
 end;
 
@@ -99,10 +224,20 @@ begin
   Workers.Clear; // 清除所有作业
 end;
 
+procedure TGame.UnknownHandle;
+begin
+
+end;
+
 initialization
 
 TObjConfig.ChargeFullPath := '.\Bin\Charge.dll'; // 设置插件路径
+RegisterGameClass;
+// RegisterServices('Services/Game', [TGame.Create(IGame, 'Game')]);
 
 finalization
+
+// UnregisterServices('Services/Game', ['Game']);
+CleanupGlobalContainer;
 
 end.

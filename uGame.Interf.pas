@@ -7,7 +7,7 @@ unit uGame.Interf;
 
 interface
 
-uses uObj, System.SysUtils, System.Types, Spring, QWorker,QPlugins;
+uses uObj, System.SysUtils, System.Types, Spring;
 
 const
   clWndActive = 'ffffff-000100'; // 窗口的置顶颜色值

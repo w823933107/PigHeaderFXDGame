@@ -15,6 +15,12 @@
         <Projects Include="pigheader.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="yixin.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Config.dproj">
+            <Dependencies/>
+        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -59,14 +65,32 @@
     <Target Name="pigheader:Make">
         <MSBuild Projects="pigheader.dproj" Targets="Make"/>
     </Target>
+    <Target Name="yixin">
+        <MSBuild Projects="yixin.dproj"/>
+    </Target>
+    <Target Name="yixin:Clean">
+        <MSBuild Projects="yixin.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="yixin:Make">
+        <MSBuild Projects="yixin.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Config">
+        <MSBuild Projects="Config.dproj"/>
+    </Target>
+    <Target Name="Config:Clean">
+        <MSBuild Projects="Config.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Config:Make">
+        <MSBuild Projects="Config.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="猪头鲁路修版;suxin;秀秀;pigheader"/>
+        <CallTarget Targets="猪头鲁路修版;suxin;秀秀;pigheader;yixin;Config"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="猪头鲁路修版:Clean;suxin:Clean;秀秀:Clean;pigheader:Clean"/>
+        <CallTarget Targets="猪头鲁路修版:Clean;suxin:Clean;秀秀:Clean;pigheader:Clean;yixin:Clean;Config:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="猪头鲁路修版:Make;suxin:Make;秀秀:Make;pigheader:Make"/>
+        <CallTarget Targets="猪头鲁路修版:Make;suxin:Make;秀秀:Make;pigheader:Make;yixin:Make;Config:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

@@ -42,7 +42,7 @@ implementation
 {$R *.dfm}
 
 
-uses QPlugins, qplugins_vcl_messages, qplugins_loader_lib;
+uses qplugins_vcl_messages;
 
 procedure TForm2.btnConfigClick(Sender: TObject);
 begin

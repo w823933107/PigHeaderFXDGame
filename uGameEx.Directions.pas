@@ -1,10 +1,8 @@
-// 处理方向 ,涉及到障碍物的获取
-// 本单元需要着重维护
-unit uGame.Directions;
+unit uGameEx.Directions;
 
 interface
 
-uses uGame.Interf, System.Types, CodeSiteLogging, System.SysUtils;
+uses uGameEx.Interf, System.Types, CodeSiteLogging, System.SysUtils;
 
 type
   TDirections = class(TGameBase, IDirections)
@@ -3968,5 +3966,12 @@ begin
     Result := Result + 'bottom';
 
 end;
+
+initialization
+
+
+
+finalization
+
 
 end.

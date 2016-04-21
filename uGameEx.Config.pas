@@ -5,17 +5,17 @@ unit uGameEx.Config;
 
 interface
 
-uses uGameEx.Interf, System.IniFiles, qjson, QPlugins, QString;
+uses uGameEx.Interf, System.IniFiles, qjson;
 
 type
   // 使用Json保存配置文件
-  TGameConfigManagerJson = class(TQService, IGameConfigManager)
+  TGameConfigManagerJson = class(TInterfacedObject, IGameConfigManager)
   private
     FJson: TQJson;
     FFileName: string;
   public
-    // constructor Create();
-    constructor Create(const AId: TGuid; AName: QStringW); overload; override;
+    constructor Create(); overload;
+   // constructor Create(const AId: TGuid; AName: QStringW); overload; override;
     destructor Destroy; override;
     procedure SetFileName(aFileName: string);
     procedure SetConfig(const aGameConfig: TGameConfig);
@@ -26,11 +26,19 @@ implementation
 
 { TGameConfigManagerJson }
 
-constructor TGameConfigManagerJson.Create(const AId: TGuid; AName: QStringW);
+constructor TGameConfigManagerJson.Create;
 begin
-  inherited;
+
   FJson := TQJson.Create;
+  FFileName := sConfigPath; // 设置默认配置路径
 end;
+
+//constructor TGameConfigManagerJson.Create(const AId: TGuid; AName: QStringW);
+//begin
+//  inherited;
+//  FJson := TQJson.Create;
+//  FFileName := sConfigPath; // 设置默认配置路径
+//end;
 
 destructor TGameConfigManagerJson.Destroy;
 begin
@@ -59,10 +67,11 @@ end;
 
 initialization
 
-RegisterServices('/Services/Config',
-  [TGameConfigManagerJson.Create(IGameConfigManager, 'GameConfigManagerJson')]);
+// RegisterServices('Services/Game',
+// [TGameConfigManagerJson.Create(IGameConfigManager, 'Config')]);
 
 finalization
 
+// UnregisterServices('Services/Game', ['Config']);
 
 end.

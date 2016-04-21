@@ -13,14 +13,32 @@ library pigheader;
 uses
   System.SysUtils,
   System.Classes,
+  Spring.Container,
   uGameEx.Interf in 'uGameEx.Interf.pas',
   uGameEx in 'uGameEx.pas',
   uGameEx.RoleInfo in 'uGameEx.RoleInfo.pas',
   uGameEx.Config in 'uGameEx.Config.pas',
-  uGameEx.Man in 'uGameEx.Man.pas';
+  uGameEx.Man in 'uGameEx.Man.pas',
+  uGameEx.Monster in 'uGameEx.Monster.pas',
+  uGameEx.Door in 'uGameEx.Door.pas',
+  uGameEx.Map in 'uGameEx.Map.pas',
+  uGameEx.Directions in 'uGameEx.Directions.pas',
+  uGameEx.Move in 'uGameEx.Move.pas',
+  uGameEx.Goods in 'uGameEx.Goods.pas',
+  uGameEx.Skill in 'uGameEx.Skill.pas',
+  uObj in 'uObj.pas',
+  uGameEx.RegisterClass in 'uGameEx.RegisterClass.pas';
 
 {$R *.res}
 
+
+function CreateGameObj: IGame;
+begin
+  Result := GlobalContainer.Resolve<IGame>;
+ // Result := TGame.Create;
+end;
+
+exports CreateGameObj;
 
 begin
   ReportMemoryLeaksOnShutdown := Boolean(DebugHook);

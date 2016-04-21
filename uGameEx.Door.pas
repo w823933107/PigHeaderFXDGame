@@ -1,15 +1,15 @@
-unit uGame.Door;
+unit uGameEx.Door;
 
 interface
 
-uses uGame.Interf, System.Types;
+uses uGameEx.Interf, System.Types, CodeSiteLogging;
 
 type
   TDoor = class(TGameBase, IDoor)
   private
     FMiniMap: TMiniMap;
     FManPoint: TPoint;
-public
+  public
     // 只写数据设置
     procedure SetMiniMap(const value: TMiniMap);
     procedure SetManPoint(const value: TPoint);
@@ -244,5 +244,11 @@ begin
     FMiniMap := value;
 
 end;
+
+initialization
+
+
+finalization
+
 
 end.

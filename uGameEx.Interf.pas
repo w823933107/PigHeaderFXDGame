@@ -3,9 +3,15 @@ unit uGameEx.Interf;
 
 interface
 
-uses QPlugins, uObj, System.SysUtils, QWorker, System.Types, Spring;
+uses uObj, System.SysUtils, QWorker, System.Types, Spring,
+  CodeSiteLogging, QPlugins;
 
 const
+  // 路径配置
+  sDictPath = '.\Dict\Main.txt'; // 先设置的字库路径在设置的图片为全局路径
+  sPicPath = '.\Pic'; // 图片路径
+  sConfigPath = '.\Config\Config.txt'; // 配置文件路径
+  // 常量值
   clWndActive = 'ffffff-000100'; // 窗口的置顶颜色值
   clWndNoActive = 'aaaaaa-000100'; // 窗口未置顶颜色值
   clWndOpen = 'ffffff-000100|aaaaaa-000100'; // 窗口打开的颜色值
@@ -29,6 +35,8 @@ const
   mjLinghunshougezhe = '灵魂收割者';
 
 type
+  EGame = Exception;
+
   TRectHelper = record helper for TRect
     procedure DmNormalizeRect;
   end;
@@ -118,6 +126,7 @@ type
     GameConfig: TGameConfig;
     RoleInfo: TRoleInfo;
     ManStrColor: string;
+    Job: PQJob;
   end;
 
   TGameDirectionLR = (
@@ -165,26 +174,32 @@ type
     property Config: TGameConfig read GetConfig write SetConfig;
   end;
 
-  // 游戏与界面交互接口
-  IGame = interface
-    ['{712FB04C-4C19-4D05-BF57-3F99D389657E}']
-    procedure SetGameConfigManager(const value: IGameConfigManager);
-
-    procedure Start;
-    procedure Stop;
-    property GameConfigManager: IGameConfigManager write SetGameConfigManager;
+  IGameBase = interface
+    ['{5CC9C6B8-BC5B-4313-84C6-AE82751781AA}']
+    procedure SetGameData(aGameData: PGameData);
   end;
 
+  // 游戏与界面交互接口
+  IGame = interface(IGameBase)
+    ['{03606AA3-1082-484B-B503-AA2069EF6C7E}']
+    procedure Start;
+    procedure Stop;
+    procedure SetApplicationHanlde(aHandle: THandle);
+    function Guard(): Boolean;
+  end;
+
+  // 基础自插件服务,方便支持插件框架
   TGameBase = class(TQService)
   private
     FObj: IChargeObj;
     FMyObj: TMyObj;
+    FGameData: PGameData;
     procedure SetObj(value: IChargeObj);
+    function GetJob: PQJob;
+    procedure SetJob(const value: PQJob);
+    function GetTerminated: Boolean;
   protected
-    GameData: PGameData; // 全局信息
-    property MyObj: TMyObj read FMyObj;
-    property Obj: IChargeObj read FObj write SetObj;
-  protected
+
     // 报警
     procedure Warnning;
     // 关闭窗口
@@ -193,18 +208,25 @@ type
     procedure MoveToFixPoint;
     // 设置偏色,如果包含了-就不做处理
     function StrColorOffset(color: string): string;
+    procedure SetGameData(aGameData: PGameData);
   public
     destructor Destroy; override;
+    property Terminated: Boolean read GetTerminated;
+    property GameData: PGameData read FGameData write SetGameData; // 全局信息
+    property MyObj: TMyObj read FMyObj;
+    property Obj: IChargeObj read FObj write SetObj;
+    property Job: PQJob read GetJob write SetJob;
   end;
+
   // ---------------一下为游戏必要的基础接口---------------------
 
   // 角色信息处理接口,用来获取角色信息
-  IRoleInfoHandle = interface
+  IRoleInfoHandle = interface(IGameBase)
     ['{196BF2CF-20C9-49A4-8A73-61F03EF830A7}']
     function GetRoleInfo: TRoleInfo;
   end;
 
-  IMap = interface
+  IMap = interface(IGameBase)
     ['{A04EE806-211B-4C99-B8A1-171E793E6486}']
     function GetLargeMap: TLargeMap;
     function GetMiniMap: TMiniMap;
@@ -213,7 +235,7 @@ type
     property MiniMap: TMiniMap read GetMiniMap;
   end;
 
-  IMan = interface
+  IMan = interface(IGameBase)
     ['{D8B2AA51-B8CC-4930-8F59-958C669AC5F3}']
     function GetPoint: TPoint;
     function GetRect: TRect;
@@ -222,7 +244,7 @@ type
 
   end;
 
-  IMonster = interface
+  IMonster = interface(IGameBase)
     ['{703DD800-3F05-4626-87FF-733092C7F2D4}']
     function GetPoint: TPoint;
     procedure SetManPoint(const value: TPoint);
@@ -236,7 +258,7 @@ type
 
   end;
 
-  IDoor = interface
+  IDoor = interface(IGameBase)
     ['{9D2AD64F-AB22-44B3-8E75-5DF71746F99D}']
     function GetIsOpen: Boolean;
     function GetPoint: TPoint;
@@ -255,7 +277,7 @@ type
 
   IMove = interface;
 
-  IDirections = interface
+  IDirections = interface(IGameBase)
     ['{0D3C96E4-81E9-4FF6-AA0C-0DEAB0A79731}']
     // procedure SetMove(const value: IMove);
 
@@ -275,7 +297,7 @@ type
 
   end;
 
-  IMove = interface
+  IMove = interface(IGameBase)
     ['{6906F8ED-0F14-4D25-8BA3-379A99BCA1C3}']
     procedure Reset; // 恢复按键状态,防止卡键
     procedure MoveToLeft;
@@ -299,7 +321,7 @@ type
       const aMiniMap: TMiniMap);
   end;
 
-  ISkill = interface
+  ISkill = interface(IGameBase)
     ['{7A45559A-E38C-4352-AC0E-56E765D701E5}']
     procedure RestetSkills; // 初始化技能数据
     procedure ReleaseSkill;
@@ -307,7 +329,7 @@ type
     procedure ReleaseHelperSkill; // 辅助技能,没有到达怪物也可以释放的技能
   end;
 
-  IGoods = interface
+  IGoods = interface(IGameBase)
     ['{466FEC32-366D-4AD0-B2EE-D0014B4C3C0E}']
     procedure SetManPoint(const value: TPoint);
     function GetPoint: TPoint;
@@ -321,7 +343,7 @@ type
     procedure PickupGoods;
   end;
 
-  ICheckTimeOut = interface
+  ICheckTimeOut = interface(IGameBase)
     ['{83AA4347-B0AC-472F-A60E-E5E66156E003}']
     function IsManMoveTimeOut(const aManPoint: TPoint): Boolean;
     function IsManFindTimeOut(const aManPoint: TPoint): Boolean;
@@ -332,7 +354,7 @@ type
 
   TZhuangbeiType = (zt未知, zt普通, zt高级, zt稀有, zt神器, zt传承, zt勇者, zt传说, zt史诗);
 
-  IBox = interface
+  IBox = interface(IGameBase)
     ['{B21ED922-69DD-49EA-A5EA-8870A2221014}']
     function GetBasePoint: TPoint;
     function GetPoints: Vector<TPoint>;
@@ -351,68 +373,19 @@ type
     function GetZhuangbeiPercentage: Integer;
   end;
 
-  IPassGame = interface
+  IPassGame = interface(IGameBase)
     ['{77EF1605-C3C3-4D5B-863E-83564AF35D52}']
     procedure Handle;
   end;
 
-  IOutMap = interface
+  IOutMap = interface(IGameBase)
     ['{087DE172-B582-49F8-8CCD-D2F81055C6AE}']
     procedure Handle;
   end;
 
-  // 以前使用的spring架构
-  { procedure RegisterGameClass;
-    procedure UnregisterGameClass;
-  }
 implementation
 
-{ uses
-  CodeSitelogging,
-  Spring.Container,
-  uGame.Config, // 配置
-  uGame, // 总操作
-  uGame.Info, // 人物信息
-  uGame.Map, // 地图
-  uGame.Man, // 人
-  uGame.Monster, // 怪物
-  uGame.Door, // 门
-  uGame.Directions, // 方向
-  uGame.Move, // 移动
-  uGame.Skill,
-  uGame.CheckTimeOut,
-  uGame.Goods,
-  uGame.PassGame,
-  uGame.OutMap
-  ;
 
-  procedure RegisterGameClass;
-  begin
-  // CodeSite.Send('注册游戏功能');
-  // GlobalContainer.RegisterType<TGame>;
-  // GlobalContainer.RegisterType<TGameConfigManagerJson>;
-  // GlobalContainer.RegisterType<TRoleInfoHandle>;
-  // GlobalContainer.RegisterType<TMap>;
-  // GlobalContainer.RegisterType<TMan>;
-  // GlobalContainer.RegisterType<TMonster>;
-  // GlobalContainer.RegisterType<TDoor>;
-  // GlobalContainer.RegisterType<TDirections>;
-  // GlobalContainer.RegisterType<TMove>;
-  // GlobalContainer.RegisterType<TSkill>;
-  // GlobalContainer.RegisterType<TCheckTimeOut>;
-  // GlobalContainer.RegisterType<TGoods>;
-  // GlobalContainer.RegisterType<TBox>;
-  // GlobalContainer.RegisterType<TPassGame>;
-  // GlobalContainer.RegisterType<TOutMap>;
-  // GlobalContainer.Build;
-  end;
-
-  procedure UnregisterGameClass;
-  begin
-  // CodeSite.Send('卸载游戏功能');
-  GlobalContainer.Kernel.Registry.UnregisterAll;
-  end;
-}
 { TGameConfig }
 
 class function TGameConfig.Create: TGameConfig;
@@ -511,13 +484,21 @@ begin
 
 end;
 
-
-
 destructor TGameBase.Destroy;
 begin
   FObj := nil;
   FMyObj.Free;
   inherited;
+end;
+
+function TGameBase.GetJob: PQJob;
+begin
+  Result := GameData.Job;
+end;
+
+function TGameBase.GetTerminated: Boolean;
+begin
+  Result := Job.IsTerminated;
 end;
 
 procedure TGameBase.MoveToFixPoint;
@@ -528,11 +509,21 @@ begin
   Obj.Delays(150, 180);
 end;
 
+procedure TGameBase.SetGameData(aGameData: PGameData);
+begin
+  FGameData := aGameData;
+end;
+
+procedure TGameBase.SetJob(const value: PQJob);
+begin
+  GameData.Job := value;
+end;
+
 procedure TGameBase.SetObj(value: IChargeObj);
 begin
-  if not Assigned(value) then
+  if not Assigned(FObj) then
   begin
-    FObj := TObjFactory.CreateChargeObj;
+    FObj := value;
     FMyObj := TObjFactory.CreateMyObj(FObj);
   end;
 end;

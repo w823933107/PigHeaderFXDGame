@@ -10,11 +10,11 @@ interface
 // {$DEFINE USE_CODESITE}
 
 uses uGameEx.Interf, System.SysUtils, uObj, System.RegularExpressions,
-  CodeSiteLogging, QWorker, System.Types,QPlugins;
+  CodeSiteLogging, QWorker, System.Types;
 
 type
 
-  TRoleInfoHandle = class(TGameBase,IRoleInfoHandle)
+  TRoleInfoHandle = class(TGameBase, IRoleInfoHandle)
   private
     FName: string; // 角色名
     FNameWithLv: string; // 带Lv的角色名
@@ -327,8 +327,10 @@ function TRoleInfoHandle.OpenRoleInfo(AJob: PQJob): Boolean;
 begin
   Result := OpenOrCloseRoleInfo(AJob, True);
 end;
+
 initialization
-RegisterServices('Services/Game',[TRoleInfoHandle.Create()]);
+
+
 finalization
 
 

@@ -2,7 +2,7 @@ unit uGameEx.Man;
 
 interface
 
-uses uGameEx.Interf, System.Types, System.Diagnostics, QPlugins;
+uses uGameEx.Interf, System.Types, System.Diagnostics;
 
 type
   TMan = class(TGameBase, IMan)
@@ -56,7 +56,7 @@ end;
 
 initialization
 
-RegisterServices('Services/Game', [TMan.Create(IMan, 'Man')]);
+
 
 finalization
 
