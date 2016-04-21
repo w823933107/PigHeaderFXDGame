@@ -4,7 +4,7 @@ unit uGameEx.Interf;
 interface
 
 uses uObj, System.SysUtils, QWorker, System.Types, Spring,
-  CodeSiteLogging, QPlugins;
+  CodeSiteLogging;
 
 const
   // 路径配置
@@ -37,9 +37,23 @@ const
 type
   EGame = Exception;
 
-  // IFromService = interface
-  // function ShowModel: Integer;
-  // end;
+  IFormService = interface
+    ['{B44D6B79-9508-45A7-90E9-392074533F5D}']
+    function ShowModal: Integer;
+    procedure Show;
+  end;
+
+  IGameService = interface
+    ['{2BE5BFB6-1647-461E-A668-F34A3331FBAC}']
+    procedure Prepare;
+    procedure Start;
+    procedure Stop;
+    function Guard(): Boolean;
+    procedure SetHandle(const aHandle: THandle);
+  end;
+
+  TCreateForm = function(aHandle: THandle): IFormService;
+  TCreateGameService = function: IGameService;
 
   TRectHelper = record helper for TRect
     procedure DmNormalizeRect;
@@ -181,15 +195,6 @@ type
   IGameBase = interface
     ['{5CC9C6B8-BC5B-4313-84C6-AE82751781AA}']
     procedure SetGameData(aGameData: PGameData);
-  end;
-
-  IGameService = interface
-    ['{2BE5BFB6-1647-461E-A668-F34A3331FBAC}']
-    procedure Prepare;
-    procedure Start;
-    procedure Stop;
-    function Guard(): Boolean;
-    procedure SetHandle(const aHandle: THandle);
   end;
 
   // 基础自插件服务,方便支持插件框架

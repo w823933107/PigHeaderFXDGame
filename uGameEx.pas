@@ -3,7 +3,7 @@ unit uGameEx;
 interface
 
 uses QWorker, uGameEx.Interf, System.SysUtils, uObj, Winapi.Windows,
-  Spring.Container, CodeSiteLogging, Vcl.Forms, uGameEx.RegisterClass, QPlugins;
+  Spring.Container, CodeSiteLogging, Vcl.Forms, uGameEx.RegisterClass;
 
 type
   // 游戏主逻辑
@@ -34,7 +34,7 @@ type
   end;
 
   // 为了支持插件,进行了再次封装
-  TGameService = class(TQService, IGameService)
+  TGameService = class(TInterfacedObject, IGameService)
   private
     FGame: TGame;
   public
@@ -120,7 +120,7 @@ begin
   try
     try
       CodeSite.Send('start to run');
-      // AJob.Worker.ComNeeded(); // 初始化COM库 ,似乎加上了之后无法正常退出程序了
+      AJob.Worker.ComNeeded(); // 初始化COM库 ,似乎加上了之后无法正常退出程序了
       FGameData^.GameConfig := FGameConfigManager.Config; // 读取配置文件
       FGameData^.Hwnd := BindGame; // 保存游戏窗口句柄
       FGameData^.Job := AJob; // 保存主线程的作业对象
@@ -134,10 +134,10 @@ begin
         Application.MessageBox(PWideChar(E.Message), '警告');
         CodeSite.Send('error operator');
       end;
-
     end;
   finally
     CodeSite.Send('start to clear ');
+    // Workers.Clear;
     // 清除所有作业 ,调用后似乎不能正确执行
   end;
 end;
@@ -163,7 +163,7 @@ begin
       Application.MessageBox(PChar('f1盾开启失败,错误码:' + iRet.ToString), '错误');
       Application.Terminate;
     end;
-    ChDir(sPath);
+    ChDir(sPath); // 重新设置路径
     iRet := Obj.DmGuard(1, 'block');
     if iRet <> 1 then
     begin
@@ -278,12 +278,12 @@ initialization
 
 TObjConfig.ChargeFullPath := '.\Bin\Charge.dll'; // 设置插件路径
 RegisterGameClass;
-RegisterServices('Services/Game', [TGameService.Create(IGameService,
-  'GameService')]);
+// RegisterServices('Services/Game', [TGameService.Create(IGameService,
+// 'GameService')]);
 
 finalization
 
-UnregisterServices('Services/Game', ['GameService']);
+// UnregisterServices('Services/Game', ['GameService']);
 CleanupGlobalContainer;
 
 end.

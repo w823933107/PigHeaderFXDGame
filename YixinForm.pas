@@ -2,8 +2,7 @@ unit YixinForm;
 
 interface
 
-uses uGameEx.Interf, QPlugins, qplugins_vcl_messages, qplugins_formsvc,
-  qplugins_loader_lib, CodeSiteLogging,
+uses uGameEx.Interf, CodeSiteLogging,
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ComCtrls,
@@ -26,7 +25,8 @@ type
   public
     { Public declarations }
     GameService: IGameService;
-    ConfigForm: IQFormService;
+    // ConfigForm: IQFormService;
+    ConfigForm: IFormService;
   end;
 
 var
@@ -53,20 +53,28 @@ begin
 end;
 
 procedure TForm3.FormCreate(Sender: TObject);
+var
+  CreateForm: TCreateForm;
+  CreateGameService: TCreateGameService;
+  hDll: THandle;
 begin
   ReportMemoryLeaksOnShutdown := Boolean(DebugHook);
-  PluginsManager.Loaders.Add
-    (TQDLLLoader.Create('.\', '.dll')); // 路径后面要加个\,比如'.\',否则无法识别
-  PluginsManager.Start;
-  GameService := PluginsManager.ById(IGameService) as IGameService;
-  ConfigForm := PluginsManager.ByPath('Services/Form/Config') as IQFormService;
-  GameService.SetHandle(Application.Handle); // 设置句柄,貌似没啥效果
-  GameService.Prepare; // 准备执行,内存初始化一些对象
-  if GameService.Guard then // 执行保护操作,内部已经配置文件执行
-    stat1.Panels[1].Text := 'Enable'
-  else
-    stat1.Panels[1].Text := 'Disable';
-  CodeSite.Enabled := False;
+  hDll := SafeLoadLibrary('pigheader.dll');
+  if hDll > 0 then
+  begin
+    CreateForm := GetProcAddress(hDll, 'CreateConfigForm');
+    CreateGameService := GetProcAddress(hDll, 'CreateGameService');
+    if Assigned(CreateForm) and Assigned(CreateGameService) then
+    begin
+      ConfigForm := CreateForm(Application.Handle);
+      GameService := CreateGameService;
+      GameService.Prepare;
+      if GameService.Guard then
+        stat1.Panels[1].Text := 'Enable'
+      else
+        stat1.Panels[1].Text := 'Disable';
+    end;
+  end;
 end;
 
 procedure TForm3.FormDestroy(Sender: TObject);

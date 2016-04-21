@@ -11,7 +11,7 @@ uses
 
 type
 
-  TForm4 = class(TForm)
+  TConfigForm = class(TForm, IFormService)
     pgc1: TPageControl;
     ts1: TTabSheet;
     rgWndState: TRadioGroup;
@@ -68,6 +68,7 @@ type
     GameConfigManager: IGameConfigManager;
     procedure SaveConfig;
     procedure LoadConfig(const aGameConfig: TGameConfig);
+
   end;
 
 implementation
@@ -78,7 +79,7 @@ implementation
 uses Spring.Container, QPlugins, qplugins_vcl_messages, qplugins_vcl_formsvc,
   CodeSiteLogging;
 
-procedure TForm4.btnResetDefaultConfigClick(Sender: TObject);
+procedure TConfigForm.btnResetDefaultConfigClick(Sender: TObject);
 var
   aConfig: TGameConfig;
 begin
@@ -88,29 +89,29 @@ begin
   stat1.Panels[1].Text := 'ResetDefaultConfig';
 end;
 
-procedure TForm4.btnSaveConfigClick(Sender: TObject);
+procedure TConfigForm.btnSaveConfigClick(Sender: TObject);
 begin
   SaveConfig;
   stat1.Panels[1].Text := 'SaveConfig';
 end;
 
-procedure TForm4.chkLogViewClick(Sender: TObject);
+procedure TConfigForm.chkLogViewClick(Sender: TObject);
 begin
   CodeSite.Enabled := chkLogView.Checked;
 end;
 
-procedure TForm4.FormCreate(Sender: TObject);
+procedure TConfigForm.FormCreate(Sender: TObject);
 begin
   GameConfigManager := GlobalContainer.Resolve<IGameConfigManager>;
   LoadConfig(GameConfigManager.Config); // ∂¡»°≈‰÷√
 end;
 
-procedure TForm4.FormDestroy(Sender: TObject);
+procedure TConfigForm.FormDestroy(Sender: TObject);
 begin
   SaveConfig; // ±£¥Ê≈‰÷√
 end;
 
-procedure TForm4.LoadConfig(const aGameConfig: TGameConfig);
+procedure TConfigForm.LoadConfig(const aGameConfig: TGameConfig);
 begin
   with aGameConfig do
   begin
@@ -139,7 +140,7 @@ begin
   CodeSite.Enabled := chkLogView.Checked;
 end;
 
-procedure TForm4.SaveConfig;
+procedure TConfigForm.SaveConfig;
 var
   aGameConfig: TGameConfig;
 begin
@@ -171,10 +172,6 @@ end;
 
 initialization
 
-RegisterFormService('Services/Form', 'Config', TForm4, False);
-
 finalization
-
-UnregisterServices('Services/Form', ['Config']);
 
 end.

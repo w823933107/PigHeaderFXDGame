@@ -1,4 +1,4 @@
-object Form4: TForm4
+object ConfigForm: TConfigForm
   Left = 0
   Top = 0
   BorderIcons = [biSystemMenu, biMinimize]
