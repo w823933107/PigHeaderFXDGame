@@ -6,8 +6,8 @@ uses QWorker, uGameEx.Interf, System.SysUtils, uObj, Winapi.Windows,
   Spring.Container, CodeSiteLogging, Vcl.Forms, uGameEx.RegisterClass, QPlugins;
 
 type
-
-  TGame = class(TGamebase, IGame)
+  // 游戏主逻辑
+  TGame = class(TGamebase)
   private
     FObj: IChargeObj;
     FJob: IntPtr;
@@ -20,30 +20,30 @@ type
     procedure GameJob(AJob: PQJob); // 主逻辑作业
     procedure CheckJob(AJob: PQJob); // 检测作业
     procedure LoopHandle; // 循环处理
-    procedure InMapHandle;
-    procedure OutMapHandle;
-    procedure UnknownHandle;
+    procedure InMapHandle; // 图内操作
+    procedure OutMapHandle; // 图外操作
+    procedure UnknownMapHandle; // 位置图操作
     procedure CreateGameObjs(aGameData: PGameData); // 创建对象集
   public
     constructor Create();
-    // constructor Create(const AId: TGuid; AName: QStringW); overload; override;
     destructor Destroy; override;
-    procedure Init;
     procedure Start; // 配置信息
     procedure Stop;
     procedure SetApplicationHanlde(aHandle: THandle);
     function Guard(): Boolean;
   end;
 
+  // 为了支持插件,进行了再次封装
   TGameService = class(TQService, IGameService)
   private
-    FGame: IGame;
+    FGame: TGame;
   public
+    destructor Destroy; override;
     procedure SetHandle(const aHandle: THandle);
-    procedure Prepare;
-    procedure Start;
-    function Guard: Boolean;
-    procedure Stop;
+    procedure Prepare; // 由于部分功能放在插件的钩子函数中会导致程序卡住不出来,所以只能这样了
+    procedure Start; // 开始
+    function Guard: Boolean; // 如果启用了保护返回true,否则返回false
+    procedure Stop; // 停止
   end;
 
 implementation
@@ -84,7 +84,6 @@ begin
   // // 创建配置管理器
   FGameConfigManager := GlobalContainer.Resolve<IGameConfigManager>;
 end;
-//
 
 procedure TGame.CreateGameObjs(aGameData: PGameData);
 begin
@@ -130,12 +129,16 @@ begin
       LoopHandle; // 循环处理
     except
       on E: EGame do
-        MessageBox(0, PWideChar(E.Message), '警告', MB_OK);
-      // Application.MessageBox(PWideChar(E.Message), '警告');
+      // MessageBox(0, PWideChar(E.Message), '警告', MB_OK);
+      begin
+        Application.MessageBox(PWideChar(E.Message), '警告');
+        CodeSite.Send('error operator');
+      end;
+
     end;
   finally
     CodeSite.Send('start to clear ');
-    // Workers.Clear; // 清除所有作业 ,调用后似乎不能正确执行
+    // 清除所有作业 ,调用后似乎不能正确执行
   end;
 end;
 
@@ -171,16 +174,6 @@ begin
   end;
 end;
 
-procedure TGame.Init;
-begin
-  New(FGameData);
-  Obj := TObjFactory.CreateChargeObj;
-  Obj.SetDict(0, sDictPath); // 设置字库
-  Obj.SetPath(sPicPath); // 设置路径
-  // 创建配置管理器
-  FGameConfigManager := GlobalContainer.Resolve<IGameConfigManager>;
-end;
-
 procedure TGame.InMapHandle;
 begin
   case FMap.MiniMap of
@@ -207,7 +200,7 @@ begin
     CloseGameWindows; // 关闭所有窗口
     case FMap.LargeMap of
       lmUnknown:
-        UnknownHandle;
+        UnknownMapHandle;
       lmOut:
         OutMapHandle;
       lmIn:
@@ -243,12 +236,18 @@ begin
   Workers.Clear; // 清除所有作业
 end;
 
-procedure TGame.UnknownHandle;
+procedure TGame.UnknownMapHandle;
 begin
 
 end;
 
 { TGameService }
+
+destructor TGameService.Destroy;
+begin
+  FGame.Free;
+  inherited;
+end;
 
 function TGameService.Guard: Boolean;
 begin
@@ -257,7 +256,7 @@ end;
 
 procedure TGameService.Prepare;
 begin
-  FGame := GlobalContainer.Resolve<IGame>;
+  FGame := TGame.Create;
 end;
 
 procedure TGameService.SetHandle(const aHandle: THandle);
@@ -279,11 +278,12 @@ initialization
 
 TObjConfig.ChargeFullPath := '.\Bin\Charge.dll'; // 设置插件路径
 RegisterGameClass;
-RegisterServices('Services/Game', [TGameService.Create(IGame, 'Game')]);
+RegisterServices('Services/Game', [TGameService.Create(IGameService,
+  'GameService')]);
 
 finalization
 
-UnregisterServices('Services/Game', ['Game']);
+UnregisterServices('Services/Game', ['GameService']);
 CleanupGlobalContainer;
 
 end.

@@ -102,14 +102,12 @@ end;
 procedure TForm4.FormCreate(Sender: TObject);
 begin
   GameConfigManager := GlobalContainer.Resolve<IGameConfigManager>;
-  // GameConfigManager := TGameConfigManagerJson.Create;
-  // GameConfigManager:= PluginsManager.ById(IGameConfigManager) as IGameConfigManager;
-  LoadConfig(GameConfigManager.Config);
+  LoadConfig(GameConfigManager.Config); // ∂¡»°≈‰÷√
 end;
 
 procedure TForm4.FormDestroy(Sender: TObject);
 begin
-  SaveConfig;
+  SaveConfig; // ±£¥Ê≈‰÷√
 end;
 
 procedure TForm4.LoadConfig(const aGameConfig: TGameConfig);

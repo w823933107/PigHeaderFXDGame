@@ -56,13 +56,13 @@ procedure TForm3.FormCreate(Sender: TObject);
 begin
   ReportMemoryLeaksOnShutdown := Boolean(DebugHook);
   PluginsManager.Loaders.Add
-    (TQDLLLoader.Create(ExtractFilePath(Application.ExeName), '.dll'));
+    (TQDLLLoader.Create('.\', '.dll')); // 路径后面要加个\,比如'.\',否则无法识别
   PluginsManager.Start;
   GameService := PluginsManager.ById(IGameService) as IGameService;
   ConfigForm := PluginsManager.ByPath('Services/Form/Config') as IQFormService;
-  GameService.SetHandle(Application.Handle);
-  GameService.Prepare;
-  if GameService.Guard then
+  GameService.SetHandle(Application.Handle); // 设置句柄,貌似没啥效果
+  GameService.Prepare; // 准备执行,内存初始化一些对象
+  if GameService.Guard then // 执行保护操作,内部已经配置文件执行
     stat1.Panels[1].Text := 'Enable'
   else
     stat1.Panels[1].Text := 'Disable';

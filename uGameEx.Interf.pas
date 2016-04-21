@@ -37,6 +37,10 @@ const
 type
   EGame = Exception;
 
+  // IFromService = interface
+  // function ShowModel: Integer;
+  // end;
+
   TRectHelper = record helper for TRect
     procedure DmNormalizeRect;
   end;
@@ -186,16 +190,6 @@ type
     procedure Stop;
     function Guard(): Boolean;
     procedure SetHandle(const aHandle: THandle);
-  end;
-
-  // 游戏与界面交互接口
-  IGame = interface(IGameBase)
-    ['{03606AA3-1082-484B-B503-AA2069EF6C7E}']
-    procedure Init;
-    procedure Start;
-    procedure Stop;
-    procedure SetApplicationHanlde(aHandle: THandle);
-    function Guard(): Boolean;
   end;
 
   // 基础自插件服务,方便支持插件框架
