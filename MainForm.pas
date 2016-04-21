@@ -12,8 +12,6 @@ uses
 
 type
 
-
-
   TForm1 = class(TForm)
     btnStart: TButton;
     btnStop: TButton;
@@ -98,8 +96,6 @@ implementation
 
 
 uses CodeSiteLogging, uObj, uGame.PassGame {, qlang};
-
-
 
 procedure TForm1.btnStartClick(Sender: TObject);
 begin
@@ -287,16 +283,10 @@ begin
   Game.Stop;
 end;
 
-
-
 initialization
 
 
-
-
 finalization
-
-
 
 
 end.

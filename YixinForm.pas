@@ -2,7 +2,8 @@ unit YixinForm;
 
 interface
 
-uses uGameEx.Interf,
+uses uGameEx.Interf, QPlugins, qplugins_vcl_messages, qplugins_formsvc,
+  qplugins_loader_lib, CodeSiteLogging,
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ComCtrls,
@@ -24,8 +25,8 @@ type
     { Private declarations }
   public
     { Public declarations }
-    Game: IGameService;
-
+    GameService: IGameService;
+    ConfigForm: IQFormService;
   end;
 
 var
@@ -36,25 +37,19 @@ implementation
 {$R *.dfm}
 
 
-uses QPlugins, qplugins_vcl_messages, qplugins_formsvc, qplugins_loader_lib,
-  CodeSiteLogging;
-
 procedure TForm3.btn1Click(Sender: TObject);
-var
-  ConfigForm: IQFormService;
 begin
-  ConfigForm := PluginsManager.ByPath('Services/Form/Config') as IQFormService;
-  ConfigForm.ShowModal();
+  ConfigForm.Show;
 end;
 
 procedure TForm3.btn2Click(Sender: TObject);
 begin
-  Game.Start;
+  GameService.Start;
 end;
 
 procedure TForm3.btn3Click(Sender: TObject);
 begin
-  Game.Stop;
+  GameService.Stop;
 end;
 
 procedure TForm3.FormCreate(Sender: TObject);
@@ -63,9 +58,11 @@ begin
   PluginsManager.Loaders.Add
     (TQDLLLoader.Create(ExtractFilePath(Application.ExeName), '.dll'));
   PluginsManager.Start;
-  Game := PluginsManager.ById(IGameService) as IGameService;
-  Game.Prepare;
-  if Game.Guard then
+  GameService := PluginsManager.ById(IGameService) as IGameService;
+  ConfigForm := PluginsManager.ByPath('Services/Form/Config') as IQFormService;
+  GameService.SetHandle(Application.Handle);
+  GameService.Prepare;
+  if GameService.Guard then
     stat1.Panels[1].Text := 'Enable'
   else
     stat1.Panels[1].Text := 'Disable';

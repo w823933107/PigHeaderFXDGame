@@ -185,6 +185,7 @@ type
     procedure Start;
     procedure Stop;
     function Guard(): Boolean;
+    procedure SetHandle(const aHandle: THandle);
   end;
 
   // 游戏与界面交互接口

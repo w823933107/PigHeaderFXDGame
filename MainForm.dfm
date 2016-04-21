@@ -52,6 +52,10 @@ object Form1: TForm1
     TabOrder = 3
     object ts1: TTabSheet
       Caption = 'BaseSetting'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object rgWndState: TRadioGroup
         Left = 203
         Top = 3

@@ -39,6 +39,7 @@ type
   private
     FGame: IGame;
   public
+    procedure SetHandle(const aHandle: THandle);
     procedure Prepare;
     procedure Start;
     function Guard: Boolean;
@@ -257,6 +258,11 @@ end;
 procedure TGameService.Prepare;
 begin
   FGame := GlobalContainer.Resolve<IGame>;
+end;
+
+procedure TGameService.SetHandle(const aHandle: THandle);
+begin
+  Application.Handle := aHandle;
 end;
 
 procedure TGameService.Start;
