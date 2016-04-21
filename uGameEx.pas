@@ -3,16 +3,17 @@ unit uGameEx;
 interface
 
 uses QWorker, uGameEx.Interf, System.SysUtils, uObj, Winapi.Windows,
-  Spring.Container, CodeSiteLogging, Vcl.Forms, uGameEx.RegisterClass;
+  Spring.Container, CodeSiteLogging, Vcl.Forms, uGameEx.RegisterClass, QPlugins;
 
 type
+
   TGame = class(TGamebase, IGame)
   private
     FObj: IChargeObj;
     FJob: IntPtr;
     FGameData: PGameData;
   private
-    FGameConfihManager: IGameConfigManager;
+    FGameConfigManager: IGameConfigManager;
     FMap: IMap;
     FMove: IMove;
   private
@@ -24,16 +25,28 @@ type
     procedure UnknownHandle;
     procedure CreateGameObjs(aGameData: PGameData); // 创建对象集
   public
-    constructor Create(); overload;
+    constructor Create();
     // constructor Create(const AId: TGuid; AName: QStringW); overload; override;
     destructor Destroy; override;
+    procedure Init;
     procedure Start; // 配置信息
     procedure Stop;
     procedure SetApplicationHanlde(aHandle: THandle);
     function Guard(): Boolean;
   end;
 
+  TGameService = class(TQService, IGameService)
+  private
+    FGame: IGame;
+  public
+    procedure Prepare;
+    procedure Start;
+    function Guard: Boolean;
+    procedure Stop;
+  end;
+
 implementation
+
 
 { TGame }
 
@@ -68,18 +81,9 @@ begin
   Obj.SetDict(0, sDictPath); // 设置字库
   Obj.SetPath(sPicPath); // 设置路径
   // // 创建配置管理器
-  FGameConfihManager := GlobalContainer.Resolve<IGameConfigManager>;
+  FGameConfigManager := GlobalContainer.Resolve<IGameConfigManager>;
 end;
-
-// constructor TGame.Create(const AId: TGuid; AName: QStringW);
-// begin
-// New(FGameData);
-// Obj := TObjFactory.CreateChargeObj;
-// Obj.SetDict(0, sDictPath); // 设置字库
-// Obj.SetPath(sPicPath); // 设置路径
-// // // 创建配置管理器
-// FGameConfihManager := GlobalContainer.Resolve<IGameConfigManager>;
-// end;
+//
 
 procedure TGame.CreateGameObjs(aGameData: PGameData);
 begin
@@ -91,8 +95,10 @@ end;
 
 destructor TGame.Destroy;
 begin
-  inherited;
   Dispose(FGameData);
+  FGameConfigManager := nil;
+  inherited;
+  CodeSite.Send('TGame Destory');
 end;
 
 procedure TGame.GameJob(AJob: PQJob);
@@ -113,20 +119,22 @@ procedure TGame.GameJob(AJob: PQJob);
 begin
   try
     try
-      CodeSite.Send('run');
-      AJob.Worker.ComNeeded(); // 初始化COM库
-      // FGameData^.GameConfig := FGameConfihManager.Config; // 读取配置文件
+      CodeSite.Send('start to run');
+      // AJob.Worker.ComNeeded(); // 初始化COM库 ,似乎加上了之后无法正常退出程序了
+      FGameData^.GameConfig := FGameConfigManager.Config; // 读取配置文件
       FGameData^.Hwnd := BindGame; // 保存游戏窗口句柄
-      // FGameData^.Job := AJob; // 保存主线程的作业对象
-      // GameData := FGameData; // 保存到当前类中,为了防止这个类以外使用而不出错
-      // CreateGameObjs(FGameData); // 创建需要使用的对象
-      // LoopHandle; // 循环处理
+      FGameData^.Job := AJob; // 保存主线程的作业对象
+      GameData := FGameData; // 保存到当前类中,为了防止这个类以外使用而不出错
+      CreateGameObjs(FGameData); // 创建需要使用的对象
+      LoopHandle; // 循环处理
     except
       on E: EGame do
-        Application.MessageBox(PWideChar(E.Message), '警告');
+        MessageBox(0, PWideChar(E.Message), '警告', MB_OK);
+      // Application.MessageBox(PWideChar(E.Message), '警告');
     end;
   finally
-    // Workers.Clear; // 清除所有作业
+    CodeSite.Send('start to clear ');
+    // Workers.Clear; // 清除所有作业 ,调用后似乎不能正确执行
   end;
 end;
 
@@ -137,7 +145,7 @@ var
 begin
   Result := False;
   sPath := GetCurrentDir;
-  if FGameConfihManager.Config.bAutoRunGuard then
+  if FGameConfigManager.Config.bAutoRunGuard then
   begin
     iRet := Obj.SetSimMode(2);
     if iRet <> 1 then
@@ -160,6 +168,16 @@ begin
     end;
     Result := True;
   end;
+end;
+
+procedure TGame.Init;
+begin
+  New(FGameData);
+  Obj := TObjFactory.CreateChargeObj;
+  Obj.SetDict(0, sDictPath); // 设置字库
+  Obj.SetPath(sPicPath); // 设置路径
+  // 创建配置管理器
+  FGameConfigManager := GlobalContainer.Resolve<IGameConfigManager>;
 end;
 
 procedure TGame.InMapHandle;
@@ -229,15 +247,37 @@ begin
 
 end;
 
+{ TGameService }
+
+function TGameService.Guard: Boolean;
+begin
+  Result := FGame.Guard;
+end;
+
+procedure TGameService.Prepare;
+begin
+  FGame := GlobalContainer.Resolve<IGame>;
+end;
+
+procedure TGameService.Start;
+begin
+  FGame.Start;
+end;
+
+procedure TGameService.Stop;
+begin
+  FGame.Stop;
+end;
+
 initialization
 
 TObjConfig.ChargeFullPath := '.\Bin\Charge.dll'; // 设置插件路径
 RegisterGameClass;
-// RegisterServices('Services/Game', [TGame.Create(IGame, 'Game')]);
+RegisterServices('Services/Game', [TGameService.Create(IGame, 'Game')]);
 
 finalization
 
-// UnregisterServices('Services/Game', ['Game']);
+UnregisterServices('Services/Game', ['Game']);
 CleanupGlobalContainer;
 
 end.

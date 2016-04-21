@@ -10,13 +10,6 @@ uses uGameEx.Interf,
 
 type
 
-  // IGame = interface
-  // ['{03606AA3-1082-484B-B503-AA2069EF6C7E}']
-  // procedure Start;
-  // procedure Stop;
-  // function Guard: Boolean;
-  // end;
-
   TForm3 = class(TForm)
     btn1: TButton;
     btn2: TButton;
@@ -24,14 +17,15 @@ type
     stat1: TStatusBar;
     procedure btn1Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure FormDestroy(Sender: TObject);
     procedure btn2Click(Sender: TObject);
     procedure btn3Click(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
   private
     { Private declarations }
   public
     { Public declarations }
-    Game: IGame;
+    Game: IGameService;
+
   end;
 
 var
@@ -42,29 +36,15 @@ implementation
 {$R *.dfm}
 
 
-procedure TForm3.btn1Click(Sender: TObject);
-type
-  TMyFunc = function: TForm;
-var
-  hDll: THandle;
-  GameForm: TForm;
-  CreateGameForm: TMyFunc;
-begin
-  hDll := SafeLoadLibrary('Config.dll');
-  if hDll > 0 then
-  begin
-    CreateGameForm := GetProcAddress(hDll, 'CreateGameForm');
-    if Assigned(CreateGameForm) then
-    begin
-      GameForm := CreateGameForm;
-      GameForm.Left := Self.Left;
-      GameForm.Top := Self.Top;
-      GameForm.ShowModal;
-      GameForm.Free;
-    end;
-    FreeLibrary(hDll);
-  end;
+uses QPlugins, qplugins_vcl_messages, qplugins_formsvc, qplugins_loader_lib,
+  CodeSiteLogging;
 
+procedure TForm3.btn1Click(Sender: TObject);
+var
+  ConfigForm: IQFormService;
+begin
+  ConfigForm := PluginsManager.ByPath('Services/Form/Config') as IQFormService;
+  ConfigForm.ShowModal();
 end;
 
 procedure TForm3.btn2Click(Sender: TObject);
@@ -78,34 +58,28 @@ begin
 end;
 
 procedure TForm3.FormCreate(Sender: TObject);
-var
-  hDll: THandle;
-type
-  TMyFunc = function: IGame;
-var
-  CreateGameObj: TMyFunc;
 begin
-  // hDll := SafeLoadLibrary('pigheader.dll');
-  // if hDll > 0 then
-  // begin
-  // CreateGameObj := GetProcAddress(hDll, 'CreateGameObj');
-  // if Assigned(CreateGameObj) then
-  // begin
-  // Game := CreateGameObj;
-  // Game.SetApplicationHanlde(Application.Handle);
-  // if Game.Guard then
-  // stat1.Panels[1].Text := 'Enable'
-  // else
-  // stat1.Panels[1].Text := 'Disable';
-  //
-  // end;
-  // end;
-
+  ReportMemoryLeaksOnShutdown := Boolean(DebugHook);
+  PluginsManager.Loaders.Add
+    (TQDLLLoader.Create(ExtractFilePath(Application.ExeName), '.dll'));
+  PluginsManager.Start;
+  Game := PluginsManager.ById(IGameService) as IGameService;
+  Game.Prepare;
+  if Game.Guard then
+    stat1.Panels[1].Text := 'Enable'
+  else
+    stat1.Panels[1].Text := 'Disable';
+  CodeSite.Enabled := False;
 end;
 
 procedure TForm3.FormDestroy(Sender: TObject);
 begin
-  // PluginsManager.Stop;
+  CodeSite.Send('FormDestory');
 end;
+
+initialization
+
+finalization
+
 
 end.

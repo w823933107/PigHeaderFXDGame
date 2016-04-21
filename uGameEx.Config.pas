@@ -15,7 +15,7 @@ type
     FFileName: string;
   public
     constructor Create(); overload;
-   // constructor Create(const AId: TGuid; AName: QStringW); overload; override;
+  //   constructor Create(const AId: TGuid; AName: QStringW); overload; override;
     destructor Destroy; override;
     procedure SetFileName(aFileName: string);
     procedure SetConfig(const aGameConfig: TGameConfig);
@@ -33,12 +33,12 @@ begin
   FFileName := sConfigPath; // 设置默认配置路径
 end;
 
-//constructor TGameConfigManagerJson.Create(const AId: TGuid; AName: QStringW);
-//begin
-//  inherited;
-//  FJson := TQJson.Create;
-//  FFileName := sConfigPath; // 设置默认配置路径
-//end;
+// constructor TGameConfigManagerJson.Create(const AId: TGuid; AName: QStringW);
+// begin
+// inherited;
+// FJson := TQJson.Create;
+// FFileName := sConfigPath; // 设置默认配置路径
+// end;
 
 destructor TGameConfigManagerJson.Destroy;
 begin
@@ -67,11 +67,11 @@ end;
 
 initialization
 
-// RegisterServices('Services/Game',
-// [TGameConfigManagerJson.Create(IGameConfigManager, 'Config')]);
+//RegisterServices('Services/Game',
+//  [TGameConfigManagerJson.Create(IGameConfigManager, 'Config')]);
 
 finalization
 
-// UnregisterServices('Services/Game', ['Config']);
+//UnregisterServices('Services/Game', ['Config']);
 
 end.

@@ -1575,7 +1575,7 @@ end;
 class destructor TComService.Destroy;
 begin
   // 不必调用也会自动释放,如果强制调用可能会出错
-  // FreeAllDll;
+ // FreeAllDll;
   FreeAndNil(FDllDictionary); // 释放对象
 end;
 

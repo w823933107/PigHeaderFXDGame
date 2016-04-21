@@ -113,6 +113,7 @@ object Form4: TForm4
           Checked = True
           State = cbChecked
           TabOrder = 6
+          OnClick = chkLogViewClick
         end
       end
       object grp1: TGroupBox

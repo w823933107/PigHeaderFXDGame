@@ -53,20 +53,17 @@ end;
 procedure TForm2.btnStartClick(Sender: TObject);
 begin
   Start;
-  // FForm.Start;
+
 end;
 
 procedure TForm2.btnStopClick(Sender: TObject);
 begin
   Stop;
-  // FForm.Stop;
+
 end;
 
 procedure TForm2.FormCreate(Sender: TObject);
 begin
-  // PluginsManager.Loaders.Add(TQDLLLoader.Create('..\suxin.dll', '.dll'));
-  // PluginsManager.Start;
-  // FForm := PluginsManager.ById(IForm) as IForm;
   hSuxin := SafeLoadLibrary('..\suxin.dll');
   if hSuxin = 0 then
   begin
@@ -84,9 +81,8 @@ end;
 
 procedure TForm2.FormDestroy(Sender: TObject);
 begin
-  // FForm.SaveConfig;
   SaveConfig;
-  // DestoryForm;
+
 end;
 
 end.

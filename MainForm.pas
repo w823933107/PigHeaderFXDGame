@@ -12,15 +12,9 @@ uses
 
 type
 
-  IForm = interface
-    ['{EBDD9C54-76DD-4D6D-A657-44CB3BC64794}']
-    procedure Show;
-    procedure Start;
-    procedure Stop;
-    procedure SaveConfig; // ±£¥Ê≈‰÷√Œƒº˛
-  end;
 
-  TForm1 = class(TForm, IForm)
+
+  TForm1 = class(TForm)
     btnStart: TButton;
     btnStop: TButton;
     btnZhuangbeiPercentage: TButton;

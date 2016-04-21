@@ -15,10 +15,7 @@
         <Projects Include="pigheader.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="yixin.dproj">
-            <Dependencies/>
-        </Projects>
-        <Projects Include="Config.dproj">
+        <Projects Include="艺馨.dproj">
             <Dependencies/>
         </Projects>
     </ItemGroup>
@@ -65,32 +62,23 @@
     <Target Name="pigheader:Make">
         <MSBuild Projects="pigheader.dproj" Targets="Make"/>
     </Target>
-    <Target Name="yixin">
-        <MSBuild Projects="yixin.dproj"/>
+    <Target Name="艺馨">
+        <MSBuild Projects="艺馨.dproj"/>
     </Target>
-    <Target Name="yixin:Clean">
-        <MSBuild Projects="yixin.dproj" Targets="Clean"/>
+    <Target Name="艺馨:Clean">
+        <MSBuild Projects="艺馨.dproj" Targets="Clean"/>
     </Target>
-    <Target Name="yixin:Make">
-        <MSBuild Projects="yixin.dproj" Targets="Make"/>
-    </Target>
-    <Target Name="Config">
-        <MSBuild Projects="Config.dproj"/>
-    </Target>
-    <Target Name="Config:Clean">
-        <MSBuild Projects="Config.dproj" Targets="Clean"/>
-    </Target>
-    <Target Name="Config:Make">
-        <MSBuild Projects="Config.dproj" Targets="Make"/>
+    <Target Name="艺馨:Make">
+        <MSBuild Projects="艺馨.dproj" Targets="Make"/>
     </Target>
     <Target Name="Build">
-        <CallTarget Targets="猪头鲁路修版;suxin;秀秀;pigheader;yixin;Config"/>
+        <CallTarget Targets="猪头鲁路修版;suxin;秀秀;pigheader;艺馨"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="猪头鲁路修版:Clean;suxin:Clean;秀秀:Clean;pigheader:Clean;yixin:Clean;Config:Clean"/>
+        <CallTarget Targets="猪头鲁路修版:Clean;suxin:Clean;秀秀:Clean;pigheader:Clean;艺馨:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="猪头鲁路修版:Make;suxin:Make;秀秀:Make;pigheader:Make;yixin:Make;Config:Make"/>
+        <CallTarget Targets="猪头鲁路修版:Make;suxin:Make;秀秀:Make;pigheader:Make;艺馨:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

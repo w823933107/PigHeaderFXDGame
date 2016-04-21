@@ -60,6 +60,7 @@ type
     procedure btnSaveConfigClick(Sender: TObject);
     procedure btnResetDefaultConfigClick(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure chkLogViewClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -74,7 +75,8 @@ implementation
 {$R *.dfm}
 
 
-uses Spring.Container;
+uses Spring.Container, QPlugins, qplugins_vcl_messages, qplugins_vcl_formsvc,
+  CodeSiteLogging;
 
 procedure TForm4.btnResetDefaultConfigClick(Sender: TObject);
 var
@@ -92,24 +94,29 @@ begin
   stat1.Panels[1].Text := 'SaveConfig';
 end;
 
+procedure TForm4.chkLogViewClick(Sender: TObject);
+begin
+  CodeSite.Enabled := chkLogView.Checked;
+end;
+
 procedure TForm4.FormCreate(Sender: TObject);
 begin
-//RegisterGameClass;
- // GameConfigManager := GlobalContainer.Resolve<IGameConfigManager>;
-  GameConfigManager:=TGameConfigManagerJson.Create;
+  GameConfigManager := GlobalContainer.Resolve<IGameConfigManager>;
+  // GameConfigManager := TGameConfigManagerJson.Create;
+  // GameConfigManager:= PluginsManager.ById(IGameConfigManager) as IGameConfigManager;
   LoadConfig(GameConfigManager.Config);
 end;
 
 procedure TForm4.FormDestroy(Sender: TObject);
 begin
   SaveConfig;
- // CleanupGlobalContainer;
 end;
 
 procedure TForm4.LoadConfig(const aGameConfig: TGameConfig);
 begin
   with aGameConfig do
   begin
+
     rgWndState.ItemIndex := iWndState;
     chkAutoRunGuard.Checked := bAutoRunGuard;
     edtLoopDelay.Text := iLoopDelay.ToString();
@@ -131,6 +138,7 @@ begin
     cbbMapLv.ItemIndex := iMapLv;
     chkLogView.Checked := bLogView;
   end;
+  CodeSite.Enabled := chkLogView.Checked;
 end;
 
 procedure TForm4.SaveConfig;
@@ -165,10 +173,10 @@ end;
 
 initialization
 
-
+RegisterFormService('Services/Form', 'Config', TForm4, False);
 
 finalization
 
-
+UnregisterServices('Services/Form', ['Config']);
 
 end.

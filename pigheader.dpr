@@ -27,18 +27,10 @@ uses
   uGameEx.Goods in 'uGameEx.Goods.pas',
   uGameEx.Skill in 'uGameEx.Skill.pas',
   uObj in 'uObj.pas',
-  uGameEx.RegisterClass in 'uGameEx.RegisterClass.pas';
+  uGameEx.RegisterClass in 'uGameEx.RegisterClass.pas',
+  SuxinForm in 'SuxinForm.pas' {Form4};
 
 {$R *.res}
-
-
-function CreateGameObj: IGame;
-begin
-  Result := GlobalContainer.Resolve<IGame>;
- // Result := TGame.Create;
-end;
-
-exports CreateGameObj;
 
 begin
   ReportMemoryLeaksOnShutdown := Boolean(DebugHook);

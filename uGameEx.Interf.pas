@@ -125,7 +125,7 @@ type
     Hwnd: Integer; // 窗口句柄
     GameConfig: TGameConfig;
     RoleInfo: TRoleInfo;
-    ManStrColor: string;
+    ManStrColor: string[30];
     Job: PQJob;
   end;
 
@@ -179,9 +179,18 @@ type
     procedure SetGameData(aGameData: PGameData);
   end;
 
+  IGameService = interface
+    ['{2BE5BFB6-1647-461E-A668-F34A3331FBAC}']
+    procedure Prepare;
+    procedure Start;
+    procedure Stop;
+    function Guard(): Boolean;
+  end;
+
   // 游戏与界面交互接口
   IGame = interface(IGameBase)
     ['{03606AA3-1082-484B-B503-AA2069EF6C7E}']
+    procedure Init;
     procedure Start;
     procedure Stop;
     procedure SetApplicationHanlde(aHandle: THandle);
@@ -189,7 +198,7 @@ type
   end;
 
   // 基础自插件服务,方便支持插件框架
-  TGameBase = class(TQService)
+  TGameBase = class(TInterfacedObject)
   private
     FObj: IChargeObj;
     FMyObj: TMyObj;
