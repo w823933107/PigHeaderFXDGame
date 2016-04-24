@@ -16,7 +16,7 @@ type
     function GetPointByRect(const aSearch: TRect): TPoint;
     function GetPointByDm: TPoint; // 依赖于插件算法获取坐标
     function GetPointByManPoint: TPoint; // 依赖于人物坐标获取最近坐标
- public
+  public
     procedure SetManPoint(const value: TPoint);
     function GetIsArrivedGoods: Boolean; // 此函数每次都会进行计时检测
     function GetPoint: TPoint;
@@ -133,6 +133,7 @@ end;
 
 procedure TGoods.PickupGoods;
 begin
+  Obj.KeyPressStr('x', 50);
   Obj.KeyPressStr('x', 50);
 end;
 

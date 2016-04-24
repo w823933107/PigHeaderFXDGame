@@ -26,13 +26,14 @@ type
     function FindMonsterBySpecialColor(aRect: TRect): TPoint; // 根据特殊颜色找怪物
     function FindMonsterByStr(aRect: TRect): TPoint; // 根据字找怪物
     function FindMonsterByBossStr(aRect: TRect): TPoint; // 根据Boss名字找怪物;
+    function GetMonstrStrPoint(aRect: TRect): TPoint; // 获取枪手名字坐标
     // 综合以上函数寻找怪物坐标
     function FindMonster(aRect: TRect): TPoint;
   public
     function GetPoint: TPoint;
     procedure SetManPoint(const value: TPoint);
     function GetIsExistMonster: Boolean;
-    function GetIsArriviedMonster: Boolean;
+    function IsArriviedMonster(var aMonsterPoint: TPoint): Boolean; // 返回坐标
   end;
 
 implementation
@@ -235,15 +236,15 @@ begin
   end;
 end;
 
-function TMonster.GetIsArriviedMonster: Boolean;
+function TMonster.IsArriviedMonster(var aMonsterPoint: TPoint): Boolean;
 var
   rtSearch: TRect;
   ptMonster: TPoint;
 begin
   Result := False;
   // 先设置下寻找机枪手的范围,因为伤害厉害要优先杀死
-  rtSearch := Rect(FManPoint.x - 170, FManPoint.y - 100, FManPoint.x + 170,
-    FManPoint.y + 50);
+  rtSearch := Rect(FManPoint.x - 170, FManPoint.y - 80, FManPoint.x + 170,
+    FManPoint.y + 40);
   // rtSearch := Rect(FManPoint.x - 180, FManPoint.y - 100, FManPoint.x + 180,
   // FManPoint.y + 50);
   // 设置机枪手范围
@@ -252,7 +253,8 @@ begin
   rtSearch.DmNormalizeRect;
   CodeSite.Send('人物搜索机枪手怪物范围', rtSearch);
   { TODO -c优化 : 是否到达怪物,搜寻类型不同,需要优化 }
-  ptMonster := FindMonsterByStr(rtSearch);
+  // ptMonster := FindMonsterByStr(rtSearch);   //这是个BUG,他获取的是枪手脚底怪物坐标,本身已经偏移了
+  ptMonster := GetMonstrStrPoint(rtSearch);
   if ptMonster.IsZero then
   begin
     // 还原范围
@@ -288,13 +290,46 @@ begin
     CodeSite.Send('人物坐标范围内搜索到机枪手怪物范围');
     Result := True;
   end;
-
+  if Result then
+    aMonsterPoint := ptMonster
+  else
+    aMonsterPoint := TPoint.Zero;
 end;
 
 function TMonster.GetIsExistMonster: Boolean; // 0, 110, 800, 556
 
 begin
   Result := not FindMonster(cGlobalMonsterRect).IsZero; // 非0返回true
+end;
+
+function TMonster.GetMonstrStrPoint(aRect: TRect): TPoint;
+const
+  sName = '炙|炎|魔|团|员';
+  sColor = 'b3b3b3';
+  sNameEx = '我们是|无法地|带的弹|药手';
+  sColorEx = clStrWhite;
+var
+  iRet: Integer;
+  x, y: OleVariant;
+begin
+  Result := TPoint.Zero;
+  iRet := Obj.FindStr(aRect.Left, aRect.Top, aRect.Right, aRect.Bottom, sName,
+    StrColorOffset(sColor), 1.0, x, y);
+  if iRet > -1 then
+  begin
+    Result.x := x;
+    Result.y := y;
+  end
+  else
+  begin
+    iRet := Obj.FindStr(aRect.Left, aRect.Top, aRect.Right, aRect.Bottom,
+      sNameEx, StrColorOffset(sColor), 1.0, x, y);
+    if iRet > -1 then
+    begin
+      Result.x := x;
+      Result.y := y;
+    end;
+  end;
 end;
 
 function TMonster.GetPoint: TPoint;
@@ -346,7 +381,6 @@ begin
 end;
 
 initialization
-
 
 
 finalization

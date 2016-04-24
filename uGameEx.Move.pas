@@ -16,12 +16,11 @@ type
   private
     // 延迟创建 ,放在构造函数中会导致内存泄露
     FDirections: IDirections;
-
   public
-
     constructor Create();
     destructor Destroy; override;
-    procedure Reset;
+    procedure SetGameData(aGameData: PGameData); override;
+    procedure Reset; // 重置
     procedure MoveToLeft;
     procedure MoveToRight;
     procedure MoveToUp;
@@ -49,13 +48,14 @@ type
 
 implementation
 
-uses Spring.Container;
+uses Spring.Container, Winapi.Windows;
 { TMove }
 
 constructor TMove.Create;
 begin
   FStopWatch := TStopwatch.Create;
   FDirections := GlobalContainer.Resolve<IDirections>;
+  FDirections.SetGameData(GameData);
   // FDirections := GlobalContainer.Resolve<IDirections>;
   FIsFastMove := True;
 end;
@@ -334,6 +334,12 @@ begin
   FIsRight := False;
   FIsUp := False;
   FIsDown := False;
+end;
+
+procedure TMove.SetGameData(aGameData: PGameData);
+begin
+  inherited;
+  FDirections.SetGameData(aGameData);
 end;
 
 procedure TMove.StopMove;

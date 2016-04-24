@@ -11,7 +11,7 @@ uses
 
 type
 
-  TConfigForm = class(TForm, IFormService)
+  TConfigForm = class(TForm)
     pgc1: TPageControl;
     ts1: TTabSheet;
     rgWndState: TRadioGroup;
@@ -61,6 +61,7 @@ type
     procedure btnResetDefaultConfigClick(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure chkLogViewClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
   public
@@ -68,7 +69,6 @@ type
     GameConfigManager: IGameConfigManager;
     procedure SaveConfig;
     procedure LoadConfig(const aGameConfig: TGameConfig);
-
   end;
 
 implementation
@@ -98,6 +98,11 @@ end;
 procedure TConfigForm.chkLogViewClick(Sender: TObject);
 begin
   CodeSite.Enabled := chkLogView.Checked;
+end;
+
+procedure TConfigForm.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  SaveConfig;
 end;
 
 procedure TConfigForm.FormCreate(Sender: TObject);
@@ -172,6 +177,10 @@ end;
 
 initialization
 
+RegisterFormService('Services/Form', 'Config', TConfigForm, False);
+
 finalization
+
+UnregisterServices('Services/Form', ['Config']);
 
 end.

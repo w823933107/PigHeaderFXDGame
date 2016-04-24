@@ -11,8 +11,6 @@ type
   TGame = class(TGameBase, IGame)
   private
     FJobHwnd: IntPtr;
-    // FJob: PQJob;
-    // FGameData:TGameData;
     FTerminated: Boolean; // 可能需要锁一下 FPTerminated: PBoolean;
     FIsRunning: Boolean;
     FObj: IChargeObj;
@@ -64,7 +62,7 @@ var
 
   procedure SelectMemu;
   begin
-    while not AJob.IsTerminated do
+    while (not AJob.IsTerminated) and (not Terminated) do
     begin
       iRet := FObj.FindStr(325, 91, 542, 221, '游戏菜单', clStrWhite, 1.0, x, y);
       if iRet > -1 then
@@ -82,7 +80,7 @@ var
   procedure GotoSelectRole;
 
   begin
-    while not AJob.IsTerminated do
+    while (not AJob.IsTerminated) and (not Terminated) do
     begin
       iRet := FObj.FindPic(364, 383, 436, 464, '选择角色.bmp', clPicOffsetZero,
         0.9, 0, x, y);
@@ -111,7 +109,7 @@ var
   var
     oldX: Integer; // 记录人物初始坐标
   begin
-    while not AJob.IsTerminated do
+    while (not AJob.IsTerminated) and (not Terminated) do
     begin
       iRet := FObj.FindPic(38, 42, 617, 531, '左上角.bmp', clPicOffsetZero,
         0.8, 0, x, y);
@@ -122,7 +120,7 @@ var
       end;
       Sleep(500);
     end;
-    while not AJob.IsTerminated do
+    while (not AJob.IsTerminated) and (not Terminated) do
     begin
       iRet := FObj.FindPic(38, 42, 617, 531, '左上角.bmp', clPicOffsetZero,
         0.8, 0, x, y);
@@ -141,7 +139,7 @@ var
       end;
       Sleep(100);
     end;
-    while not AJob.IsTerminated do
+    while (not AJob.IsTerminated) and (not Terminated) do
     begin
       iRet := FObj.FindStr(211, 128, 774, 540, '黄金哥布林|赛丽亚|邮件箱',
         StrColorOffset('f7d65a'), 1.0, x, y);
@@ -184,7 +182,7 @@ var
   iRet: Integer;
   hGame: Integer;
 begin
-  while not AJob.IsTerminated do
+  while (not AJob.IsTerminated) and (not Terminated) do
   begin
     // 检测客户端是否存在
     hGame := FObj.FindWindow('地下城与勇士', '地下城与勇士');
@@ -308,6 +306,7 @@ begin
     UnknownMapLoop;
     Sleep(GameData.GameConfig.iLoopDelay);
   end;
+
 end;
 
 procedure TGame.GoToInMap(AJob: PQJob);
@@ -317,7 +316,7 @@ var
   // 打开大地图
   procedure OpenLargeMap;
   begin
-    while not AJob.IsTerminated do
+    while (not AJob.IsTerminated) and (not Terminated) do
     begin
       iRet := FObj.FindPic(2, 4, 108, 48, '大地图.bmp', clPicOffsetZero,
         0.9, 0, x, y);
@@ -335,7 +334,7 @@ var
 // 移动到地图附近
   procedure MoveToNearMap;
   begin
-    while not AJob.IsTerminated do
+    while (not AJob.IsTerminated) and (not Terminated) do
     begin
       iRet := FObj.FindPic(336, 444, 358, 467, '大指针.bmp', clPicOffsetZero,
         0.8, 0, x, y);
@@ -359,7 +358,7 @@ var
 // 进入地图
   procedure DoInMap;
   begin
-    while not AJob.IsTerminated do
+    while (not AJob.IsTerminated) and (not Terminated) do
     begin
       // 发现打开了
       iRet := FObj.FindStr(696, 538, 790, 566, '返回城镇',
@@ -382,7 +381,7 @@ var
   procedure SelectMap;
   begin
     // 进入到了选图位置
-    while not AJob.IsTerminated do
+    while (not AJob.IsTerminated) and (not Terminated) do
     begin
       iRet := FObj.FindPic(8, 269, 230, 470, '根特外围(未选中).bmp',
         clPicOffsetZero, 0.9, 0, x, y);
@@ -410,7 +409,7 @@ var
   end;
   procedure SelectMapLv;
   begin
-    while not AJob.IsTerminated do
+    while (not AJob.IsTerminated) and (not Terminated) do
     begin
       iRet := FObj.FindPic(8, 269, 230, 470,
         '普通.bmp|冒险.bmp|勇士.bmp|王者.bmp', clPicOffsetZero, 0.9, 0, x, y);
@@ -789,9 +788,7 @@ procedure TGame.MainProc(AJob: PQJob);
 begin
   try
     try
-      // FJob := AJob;
       CodeSite.Send('游戏线程');
-      // RegisterGameClass; // 注册游戏功能类
       AJob.Worker.ComNeeded(); // 支持COM
       GameInit; // 初始化游戏
       GameLoop; // 游戏循环

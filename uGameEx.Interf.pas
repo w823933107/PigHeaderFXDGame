@@ -140,10 +140,11 @@ type
 
   TGameData = record
     Obj: IChargeObj;
+    MyObj: TMyObj;
     Hwnd: Integer; // 窗口句柄
     GameConfig: TGameConfig;
     RoleInfo: TRoleInfo;
-    ManStrColor: string[30];
+    ManStrColor: string; // 人物名字颜色
     Job: PQJob;
   end;
 
@@ -200,13 +201,11 @@ type
   // 基础自插件服务,方便支持插件框架
   TGameBase = class(TInterfacedObject)
   private
-    FObj: IChargeObj;
-    FMyObj: TMyObj;
     FGameData: PGameData;
-    procedure SetObj(value: IChargeObj);
+    function GetObj: IChargeObj;
     function GetJob: PQJob;
-    procedure SetJob(const value: PQJob);
     function GetTerminated: Boolean;
+    function GetMyObj: TMyObj;
   protected
 
     // 报警
@@ -217,14 +216,17 @@ type
     procedure MoveToFixPoint;
     // 设置偏色,如果包含了-就不做处理
     function StrColorOffset(color: string): string;
-    procedure SetGameData(aGameData: PGameData);
+    // 设置游戏全局数据
+    procedure SetGameData(aGameData: PGameData); virtual;
+    // 是否有疲劳
+    function IsHavePilao: Boolean;
+    function IsWeak: Boolean;
   public
-    destructor Destroy; override;
-    property Terminated: Boolean read GetTerminated;
+    property Terminated: Boolean read GetTerminated; // 主线程是否被要求终止
     property GameData: PGameData read FGameData write SetGameData; // 全局信息
-    property MyObj: TMyObj read FMyObj;
-    property Obj: IChargeObj read FObj write SetObj;
-    property Job: PQJob read GetJob write SetJob;
+    property MyObj: TMyObj read GetMyObj;
+    property Obj: IChargeObj read GetObj;
+    property Job: PQJob read GetJob;
   end;
 
   // ---------------一下为游戏必要的基础接口---------------------
@@ -258,10 +260,11 @@ type
     function GetPoint: TPoint;
     procedure SetManPoint(const value: TPoint);
     function GetIsExistMonster: Boolean;
-    function GetIsArriviedMonster: Boolean;
+ //   function GetIsArriviedMonster: Boolean;
 
+    function IsArriviedMonster(var aMonsterPoint: TPoint): Boolean;
     property ManPoint: TPoint write SetManPoint; // 寻找怪物依赖于人物坐标
-    property IsArrviedMonster: Boolean read GetIsArriviedMonster;
+    // property IsArrviedMonster: Boolean read GetIsArriviedMonster;
     property IsExistMonster: Boolean read GetIsExistMonster;
     property Point: TPoint read GetPoint;
 
@@ -347,7 +350,7 @@ type
 
     property ManPoint: TPoint write SetManPoint;
     property Point: TPoint read GetPoint;
-    property IsArrivedGoods: Boolean read GetIsArrivedGoods;
+    property IsArrivedGoods: Boolean read GetIsArrivedGoods; // 依赖于颜色识别是否到达物品的
     property IsExistGoods: Boolean read GetIsExistGoods;
     procedure PickupGoods;
   end;
@@ -357,8 +360,10 @@ type
     function IsManMoveTimeOut(const aManPoint: TPoint): Boolean;
     function IsManFindTimeOut(const aManPoint: TPoint): Boolean;
     function IsMonsterFindTimeOut(const aMonsterPoint: TPoint): Boolean;
+    function IsInMapPickupGoodsOpenedTimeOut(const aMiniMap: TMiniMap): Boolean;
     function IsInMapPickupGoodsTimeOut(const aMiniMap: TMiniMap): Boolean;
     function IsInMapLongTimeOut(const aMiniMap: TMiniMap): Boolean;
+    function IsOutMapTimeOut(const aLargeMap: TLargeMap): Boolean;
   end;
 
   TZhuangbeiType = (zt未知, zt普通, zt高级, zt稀有, zt神器, zt传承, zt勇者, zt传说, zt史诗);
@@ -375,7 +380,7 @@ type
     function IsFuZhong: Boolean;
     function IsFengZhuang: Boolean;
     function IsHaveZhuangbei: Boolean;
-
+    function GetIsfuzhongByPic: Boolean;
     property BasePoint: TPoint read GetBasePoint;
     property Points: Vector<TPoint> read GetPoints;
     // 获取装备百分比
@@ -384,7 +389,8 @@ type
 
   IPassGame = interface(IGameBase)
     ['{77EF1605-C3C3-4D5B-863E-83564AF35D52}']
-    procedure Handle;
+    procedure EndSell;
+    procedure ClickCards;
   end;
 
   IOutMap = interface(IGameBase)
@@ -414,17 +420,17 @@ begin
   Result.slShihunzhishou := 'q';
   Result.slXueqizhiren := 'w';
   Result.bVIP := False;
-  Result.iPickUpGoodsTimeOut := 10000;
-  Result.iFindManTimeOut := 3000;
-  Result.iManMoveTimeOut := 3000;
-  Result.iFindMonsterTimeOut := 3000;
-  Result.iGetInfoTimeOut := 1000 * 30;
+  Result.iPickUpGoodsTimeOut := 1000 * 10; // 10s
+  Result.iFindManTimeOut := 3000; // 3s
+  Result.iManMoveTimeOut := 3000; // 3s
+  Result.iFindMonsterTimeOut := 3000; // 3s
+  Result.iGetInfoTimeOut := 1000 * 30; // 30s
   Result.sMoveGoodsKeyCode := '3';
   Result.imaxZhuangbeiNum := 70;
-  Result.iResetMoveStateInterval := 30000;
+  Result.iResetMoveStateInterval := 3000 * 10; // 30s
   Result.bResetMoveState := True;
   Result.bRepair := True;
-  Result.iInMapTimeOut := 1000 * 60 * 3;
+  Result.iInMapTimeOut := 1000 * 60 * 3; // 3m
   Result.slBaiguiyexing := 'q';
   Result.slSilingzhifu := 'w';
   Result.slBalakedeyexin := 'e';
@@ -461,15 +467,17 @@ begin
     begin
       while not AJob.IsTerminated do
       begin
+        sleep(100);
         iRet := Obj.FindStr(0, 0, 800, 600, '关闭|返回城镇', StrColorOffset('ddc593'),
           1.0, x, y);
         if iRet > -1 then
         begin
           Obj.MoveTo(x, y);
-          Sleep(100);
+          sleep(100);
           Obj.LeftClick;
-          Sleep(200);
+          sleep(200);
           MoveToFixPoint;
+          continue;
         end;
         iRet := Obj.FindPic(0, 0, 800, 600, '叉.bmp|叉(小).bmp', clPicOffsetZero,
           0.9,
@@ -477,12 +485,13 @@ begin
         if iRet > -1 then
         begin
           Obj.MoveTo(x, y);
-          Sleep(100);
+          sleep(100);
           Obj.LeftClick;
-          Sleep(200);
+          sleep(200);
           MoveToFixPoint;
+          continue;
         end;
-        Sleep(100);
+        break;
       end;
     end, nil);
   if Workers.WaitJob(hJob, 1000 * 30, False) = wrTimeout then
@@ -493,21 +502,45 @@ begin
 
 end;
 
-destructor TGameBase.Destroy;
-begin
-  FObj := nil;
-  FMyObj.Free;
-  inherited;
-end;
-
 function TGameBase.GetJob: PQJob;
 begin
   Result := GameData.Job;
 end;
 
+function TGameBase.GetMyObj: TMyObj;
+begin
+  Result := FGameData^.MyObj;
+end;
+
+function TGameBase.GetObj: IChargeObj;
+begin
+  Result := FGameData^.Obj;
+end;
+
 function TGameBase.GetTerminated: Boolean;
 begin
   Result := Job.IsTerminated;
+end;
+
+function TGameBase.IsHavePilao: Boolean;
+var
+  iRet: Integer;
+  x, y: OleVariant;
+begin
+  iRet := Obj.FindPic(297, 545, 423, 565, '无疲劳.bmp', clPicOffsetZero,
+    0.9, 0, x, y);
+  Result := iRet = -1; // 找不到没有疲劳的图片表面还有疲劳
+
+end;
+
+function TGameBase.IsWeak: Boolean;
+var
+  x, y: OleVariant;
+  iRet: Integer;
+begin
+  iRet := Obj.FindPic(242, 488, 800, 569, '虚弱.bmp', clPicOffsetZero,
+    0.9, 0, x, y);
+  Result := iRet > -1;
 end;
 
 procedure TGameBase.MoveToFixPoint;
@@ -523,20 +556,6 @@ begin
   FGameData := aGameData;
 end;
 
-procedure TGameBase.SetJob(const value: PQJob);
-begin
-  GameData.Job := value;
-end;
-
-procedure TGameBase.SetObj(value: IChargeObj);
-begin
-  if not Assigned(FObj) then
-  begin
-    FObj := value;
-    FMyObj := TObjFactory.CreateMyObj(FObj);
-  end;
-end;
-
 function TGameBase.StrColorOffset(color: string): string;
 begin
   if not color.Contains('-') then
@@ -545,10 +564,49 @@ end;
 
 procedure TGameBase.Warnning;
 begin
+  // MonitorExit();
+
   Workers.Post(
     procedure(AJob: PQJob)
+    var
+      hPlay: THandle;
+      sw: TStopWatch;
     begin
+      hPlay := Obj.Play('wife.mp3');
+      sw := TStopWatch.StartNew;
+      while (not Terminated) and (not AJob.IsTerminated) do
+      begin
+        if sw.ElapsedMilliseconds >= 1000 * 60 * 10 then
+        begin
+          Obj.Stop(hPlay);
+          raise EGame.Create('play warning time out'); // 报警超时了终止
+        end;
+        if sw.ElapsedMilliseconds >= 1000 * 60 * 3 then
+        begin
+          Obj.Stop(hPlay);
+          hPlay := Obj.Play('wife.mp3');
+        end;
+        sleep(500);
+      end;
+      sleep(200);
+      Obj.Stop(hPlay);
+      // raise EGame.Create('warnning is stopped');
+      { hPlay := 0;
+        sw := TStopWatch.Create;
+        while not Terminated do
+        begin
+        if hPlay = 0 then
+        hPlay := Obj.Play('wife.mp3');
+        if not sw.IsRunning then
+        sw.Start;
 
+        if sw.ElapsedMilliseconds > 1000 * 60 * 3 then
+        begin
+        Obj.Stop(hPlay);
+        hPlay := 0;
+        end;
+        Sleep(500);
+        end; }
     end, nil);
 end;
 

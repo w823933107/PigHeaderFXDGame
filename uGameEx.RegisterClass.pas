@@ -20,7 +20,9 @@ uses
   uGameEx.Directions, // ·½Ïò
   uGameEx.Move, // ÒÆ¶¯
   uGameEx.Skill,
-  uGameEx.Goods
+  uGameEx.Goods,
+  uGameEx.CheckTimeOut,
+  uGameEx.PassGame
     ;
 
 procedure RegisterGameClass;
@@ -35,6 +37,9 @@ begin
   GlobalContainer.RegisterType<IMove, TMove>;
   GlobalContainer.RegisterType<ISkill, TSkill>;
   GlobalContainer.RegisterType<IGoods, TGoods>;
+  GlobalContainer.RegisterType<ICheckTimeOut, TCheckTimeOut>;
+  GlobalContainer.RegisterType<IPassGame, TPassGame>;
+
   GlobalContainer.Build;
 end;
 

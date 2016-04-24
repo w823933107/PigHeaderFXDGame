@@ -34,8 +34,8 @@ var
   x, y: OleVariant;
   iRet: Integer;
 const
-  sFirstColor = 'fff000-000000';
-  sColor = 'fff000,0|1|fff000,0|2|fff000';
+  sFirstColor = 'fff000-000100';
+  sColor = 'fff000-000100,0|1|fff000-000100,0|2|fff000-000100';
 begin
   with rtGlobalSearch do
     iRet := Obj.FindMultiColor(Left, Top, Right, Bottom, sFirstColor, sColor,
@@ -135,6 +135,7 @@ end;
 procedure TGoods.PickupGoods;
 begin
   Obj.KeyPressStr('x', 50);
+  Obj.KeyPressStr('x', 50);
 end;
 
 procedure TGoods.SetManPoint(const value: TPoint);
@@ -144,7 +145,6 @@ begin
 end;
 
 initialization
-
 
 
 finalization
