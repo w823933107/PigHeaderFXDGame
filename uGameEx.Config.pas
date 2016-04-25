@@ -5,7 +5,7 @@ unit uGameEx.Config;
 
 interface
 
-uses uGameEx.Interf, System.IniFiles, qjson, System.SysUtils;
+uses uGameEx.Interf, System.IniFiles, qjson;
 
 type
   // 使用Json保存配置文件
@@ -14,22 +14,8 @@ type
     FJson: TQJson;
     FFileName: string;
   public
-    constructor Create();
-    destructor Destroy; override;
-    procedure SetFileName(aFileName: string);
-    procedure SetConfig(const aGameConfig: TGameConfig);
-    function GetConfig(): TGameConfig;
-  end;
-
-  TGameConfigManager = class(TInterfacedObject, IGameConfigManager)
-  private
-    FFileName: string;
-    FIniFile: TIniFile;
-
-  const
-    sConfig = 'Config';
-  public
-    constructor Create();
+    constructor Create(); overload;
+  //   constructor Create(const AId: TGuid; AName: QStringW); overload; override;
     destructor Destroy; override;
     procedure SetFileName(aFileName: string);
     procedure SetConfig(const aGameConfig: TGameConfig);
@@ -79,42 +65,13 @@ begin
 
 end;
 
-{ TGameConfigManager }
-
-constructor TGameConfigManager.Create;
-begin
-  FIniFile := TIniFile.Create(sConfigPath);
-end;
-
-destructor TGameConfigManager.Destroy;
-begin
-  FIniFile.Free;
-  inherited;
-end;
-
-function TGameConfigManager.GetConfig: TGameConfig;
-begin
- // Result.iWndState := FIniFile.ReadInteger(sConfig,)
-end;
-
-procedure TGameConfigManager.SetConfig(const aGameConfig: TGameConfig);
-begin
-
-end;
-
-procedure TGameConfigManager.SetFileName(aFileName: string);
-begin
-  FreeAndNil(FIniFile);
-  FIniFile := TIniFile.Create(aFileName);
-end;
-
 initialization
 
-// RegisterServices('Services/Game',
-// [TGameConfigManagerJson.Create(IGameConfigManager, 'Config')]);
+//RegisterServices('Services/Game',
+//  [TGameConfigManagerJson.Create(IGameConfigManager, 'Config')]);
 
 finalization
 
-// UnregisterServices('Services/Game', ['Config']);
+//UnregisterServices('Services/Game', ['Config']);
 
 end.

@@ -221,15 +221,6 @@ object ConfigForm: TConfigForm
           TabOrder = 5
           Text = '180000'
         end
-        object btn1: TButton
-          Left = 40
-          Top = 152
-          Width = 75
-          Height = 25
-          Caption = 'btn1'
-          TabOrder = 6
-          OnClick = btn1Click
-        end
       end
       object grp2: TGroupBox
         Left = 175

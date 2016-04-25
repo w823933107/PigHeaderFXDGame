@@ -41,8 +41,8 @@ end;
 
 function TDoor.GetIsOpen: Boolean;
 const
-  sColorDoorClose = 'fff700-000000'; // 门关闭时的颜色
-  sColorDoorOpen = '5ac500-000000|00ff00-000000'; // 门开启时的颜色
+  sColorDoorClose = 'fff700-000100'; // 门关闭时的颜色
+  sColorDoorOpen = '5ac500-000100|00ff00-000100'; // 门开启时的颜色
   sColor = '00ff00-000100|5ac500-000100,1|0|00ff00-000100|5ac500-000100,0|1|00ff00-000100|5ac500-000100,1|1|00ff00-000100|5ac500-000100';
 var
   x, y: OleVariant;

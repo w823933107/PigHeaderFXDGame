@@ -11,7 +11,7 @@ uses
 
 type
 
-  TConfigForm = class(TForm, IFormService)
+  TConfigForm = class(TForm)
     pgc1: TPageControl;
     ts1: TTabSheet;
     rgWndState: TRadioGroup;
@@ -56,7 +56,6 @@ type
     edtKuangzhanOffsetY: TEdit;
     edtSilingOffsetY: TEdit;
     stat1: TStatusBar;
-    btn1: TButton;
     procedure FormCreate(Sender: TObject);
     procedure btnSaveConfigClick(Sender: TObject);
     procedure btnResetDefaultConfigClick(Sender: TObject);
@@ -64,7 +63,6 @@ type
     procedure chkLogViewClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormShow(Sender: TObject);
-    procedure btn1Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -72,7 +70,6 @@ type
     GameConfigManager: IGameConfigManager;
     procedure SaveConfig;
     procedure LoadConfig(const aGameConfig: TGameConfig);
-    procedure Guard;
   end;
 
 implementation
@@ -80,13 +77,8 @@ implementation
 {$R *.dfm}
 
 
-uses Spring.Container, {QPlugins, qplugins_vcl_messages, qplugins_vcl_formsvc,}
-  CodeSiteLogging, uObj;
-
-procedure TConfigForm.btn1Click(Sender: TObject);
-begin
-Guard;
-end;
+uses Spring.Container, QPlugins, qplugins_vcl_messages, qplugins_vcl_formsvc,
+  CodeSiteLogging;
 
 procedure TConfigForm.btnResetDefaultConfigClick(Sender: TObject);
 var
@@ -128,43 +120,6 @@ end;
 procedure TConfigForm.FormShow(Sender: TObject);
 begin
   LoadConfig(GameConfigManager.Config);
-end;
-
-procedure TConfigForm.Guard;
-var
-  obj: IChargeObj;
-  gameConfigMangaer: IGameConfigManager;
-  iRet: Integer;
-  sPath: string;
-begin
-  obj := TObjFactory.CreateChargeObj;
-  if GameConfigManager.Config.bAutoRunGuard then
-  begin
-    sPath := GetCurrentDir;
-    iRet := obj.DmGuard(1, 'f1');
-    if iRet <> 1 then
-    begin
-      CodeSite.Send('f1∂‹ø™∆Ù ß∞‹');
-      MessageBox(0, PChar('f1∂‹ø™∆Ù ß∞‹,¥ÌŒÛ¬Î:' + iRet.ToString), '¥ÌŒÛ', MB_OK);
-      Application.Terminate;
-    end;
-    ChDir(sPath);
-    iRet := obj.SetSimMode(2);
-    if iRet <> 1 then
-    begin
-      CodeSite.Send('”≤º˛«˝∂Øº”‘ÿ ß∞‹');
-      MessageBox(0, PChar('”≤º˛«˝∂Øº”‘ÿ ß∞‹,¥ÌŒÛ¬Î:' + iRet.ToString), '¥ÌŒÛ', MB_OK);
-      Application.Terminate;
-    end;
-    iRet := obj.DmGuard(1, 'block');
-    if iRet <> 1 then
-    begin
-      CodeSite.Send('block«˝∂Øº”‘ÿ ß∞‹');
-      MessageBox(0, PChar('block«˝∂Øº”‘ÿ ß∞‹,¥ÌŒÛ¬Î:' + iRet.ToString), '¥ÌŒÛ', MB_OK);
-      Application.Terminate;
-    end;
-  end;
-
 end;
 
 procedure TConfigForm.LoadConfig(const aGameConfig: TGameConfig);
@@ -228,10 +183,10 @@ end;
 
 initialization
 
-// RegisterFormService('Services/Form', 'Config', TConfigForm, False);
+RegisterFormService('Services/Form', 'Config', TConfigForm, False);
 
 finalization
 
-// UnregisterServices('Services/Form', ['Config']);
+UnregisterServices('Services/Form', ['Config']);
 
 end.
