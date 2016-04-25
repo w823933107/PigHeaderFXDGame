@@ -47,6 +47,7 @@ type
   private
     procedure GoToInMap;
     procedure ChangeRole;
+    procedure LongTimeNoMoveHandle(const aManPoint: TPoint);
   public
     constructor Create();
     destructor Destroy; override;
@@ -300,6 +301,7 @@ begin
   begin
     FMove.StopMove;
     FMove.MoveToFindMonster(aManPoint, aMiniMap);
+    LongTimeNoMoveHandle(aManPoint);
     Exit;
   end;
   // 移动向怪物
@@ -310,13 +312,13 @@ begin
       // 调整方向
       if FGameData.GameConfig.bNearAdjustDirection then
       begin
-        if ptMonsterArrived.x < (aManPoint.x - 30) then
+        if ptMonsterArrived.x < (aManPoint.x - 5) then
         begin
           Obj.KeyPressChar('left');
           Sleep(60);
         end
         else
-          if ptMonsterArrived.x > (aManPoint.x + 30) then
+          if ptMonsterArrived.x > (aManPoint.x + 5) then
         begin
           Obj.KeyPressChar('right');
           Sleep(60);
@@ -330,6 +332,7 @@ begin
     else
     begin
       FMove.MoveToMonster(aManPoint, ptMonster, aMiniMap);
+      LongTimeNoMoveHandle(aManPoint);
     end;
 
   end;
@@ -350,6 +353,7 @@ begin
     begin
       // 有物品走向物品,不继续执行进门
       FMove.MoveToGoods(aManPoint, ptGoods, aMiniMap);
+      LongTimeNoMoveHandle(aManPoint);
       Exit;
     end;
   end;
@@ -368,6 +372,7 @@ begin
     begin
       FMove.MoveToDoor(aManPoint, ptDoor, aMiniMap); // 进门
     end;
+    LongTimeNoMoveHandle(aManPoint);
   end;
 
 end;
@@ -649,19 +654,9 @@ procedure TGame.InMapHandle;
     begin
       FMove.StopMove;
       FMove.RandomMove; // 随机移动
-      Exit;
-    end;
-    if not aManPoint.IsZero then
-    begin
-      if FCheckTimeOut.IsManMoveTimeOut(aManPoint) then // 如果人物坐标长时间没有变化,说明卡位了
-      begin
-        FMove.StopMove;
-        FSkill.DestroyBarrier; // 破坏一下障碍
-        FMove.RandomMove; // 随机移动
-      end
-      else
-        Result := True;
-    end;
+    end
+    else
+      Result := True;
   end;
 
   procedure PickupGoods(aMiniMap: TMiniMap);
@@ -698,7 +693,8 @@ begin
   else
     CloseGameWindows; // 关闭所有窗口
     HpHandle; // 血处理
-    FSkill.ReleaseHelperSkill; // 释放辅助技能
+    if FSkill.ReleaseHelperSkill then // 释放辅助技能
+      FCheckTimeOut.ResetManStopWatch;
     if not GetManPoint(ptMan) then // 获取人物坐标
     begin
       Exit;
@@ -729,6 +725,19 @@ begin
 
   end;
 
+end;
+
+procedure TGame.LongTimeNoMoveHandle(const aManPoint: TPoint);
+begin
+  if not aManPoint.IsZero then
+  begin
+    if FCheckTimeOut.IsManMoveTimeOut(aManPoint) then // 如果人物坐标长时间没有变化,说明卡位了
+    begin
+      FMove.StopMove;
+      FSkill.DestroyBarrier; // 破坏一下障碍
+      FMove.RandomMove; // 随机移动
+    end;
+  end;
 end;
 
 procedure TGame.LoopHandle;

@@ -54,7 +54,7 @@ type
     constructor Create();
     procedure RestetSkills;
     procedure ReleaseSkill;
-    procedure ReleaseHelperSkill; // 没有到达怪物也可以释放的技能
+    function ReleaseHelperSkill: Boolean; // 没有到达怪物也可以释放的技能
     procedure DestroyBarrier; // 破坏障碍
   end;
 
@@ -647,27 +647,30 @@ begin
 
 end;
 
-procedure TSkill.ReleaseHelperSkill;
+function TSkill.ReleaseHelperSkill: Boolean;
 var
   sRoleName: string;
 begin
+  Result := False;
   sRoleName := GameData.RoleInfo.MainJob;
   if (sRoleName = mjKuangzhanshi) or (sRoleName = mjYuxuemoshen) then
   begin
     // 狂战处理
-    kzSiwangkuangju;
-    kzBaozou;
-    kzXuezhikuangbao;
+    if kzSiwangkuangju or kzBaozou or kzXuezhikuangbao then
+      Result := True;
   end
   else
     if (sRoleName = mjSilingshushi) or (sRoleName = mjLinghunshougezhe) then
   begin
     // 死灵处理
-    slNigulasi; // 先执行这个
-    slQushijiangshi; // 再执行这个次序不可逆
-    slBaojunbalake;
-    slAnyingzhizhusi;
-    slAnheiyishi;
+    // slNigulasi; // 先执行这个
+    // slQushijiangshi; // 再执行这个次序不可逆
+    // slBaojunbalake;
+    // slAnyingzhizhusi;
+    // slAnheiyishi;
+    if slNigulasi or slQushijiangshi or slBaojunbalake or slAnyingzhizhusi or slAnheiyishi
+    then
+      Result := True;
   end;
 
 end;
@@ -745,7 +748,6 @@ begin
 end;
 
 initialization
-
 
 
 finalization

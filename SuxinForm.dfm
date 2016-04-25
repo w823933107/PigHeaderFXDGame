@@ -69,7 +69,7 @@ object ConfigForm: TConfigForm
           Height = 21
           NumbersOnly = True
           TabOrder = 1
-          Text = '10'
+          Text = '20'
         end
         object udLoopDelay: TUpDown
           Left = 99
@@ -77,7 +77,7 @@ object ConfigForm: TConfigForm
           Width = 16
           Height = 21
           Associate = edtLoopDelay
-          Position = 10
+          Position = 20
           TabOrder = 2
         end
         object chkVip: TCheckBox
@@ -192,7 +192,7 @@ object ConfigForm: TConfigForm
           Height = 21
           NumbersOnly = True
           TabOrder = 2
-          Text = '3000'
+          Text = '6000'
         end
         object edtFindMonsterTimeOut: TEdit
           Left = 81

@@ -20,7 +20,7 @@ type
   private
     FStopWatchs: array [TStopWatchEnum] of TStopwatch;
     FOldManPoint: TPoint; // 上一次人物坐标
-    FOldMiniMap: TMiniMap; // 上一次小地图位置
+    FOldMiniMap, FOldMiniMapOpened: TMiniMap; // 上一次小地图位置
     FOldLargeMap: TLargeMap; // 上一次大地图位置
     FOldDoorState: Boolean;
 
@@ -142,7 +142,7 @@ function TCheckTimeOut.IsInMapPickupGoodsOpenedTimeOut(
 begin
   Result := False; // 设置默认值
   // 如果上一次和这一次地图相同
-  if CompareMiniMap(aMiniMap) then
+  if FOldMiniMapOpened = aMiniMap then
   begin
     // 是否运行
     if FStopWatchs[swInMapPickGoodsOpened].IsRunning then
@@ -159,6 +159,7 @@ begin
   begin
     FStopWatchs[swInMapPickGoodsOpened].Stop;
     // FStopWatchs[swInMapPickGoodsOpened].Reset; // 恢复默认
+    FOldMiniMapOpened := aMiniMap; // 记录上一次的
   end;
 end;
 

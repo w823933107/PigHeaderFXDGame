@@ -341,7 +341,7 @@ type
     procedure RestetSkills; // 初始化技能数据
     procedure ReleaseSkill;
     procedure DestroyBarrier; // 破坏障碍
-    procedure ReleaseHelperSkill; // 辅助技能,没有到达怪物也可以释放的技能
+    function ReleaseHelperSkill: Boolean; // 辅助技能,没有到达怪物也可以释放的技能
   end;
 
   IGoods = interface(IGameBase)
@@ -369,7 +369,7 @@ type
     function IsOutMapTimeOut(const aLargeMap: TLargeMap): Boolean;
     function CompareDoorState(aDoorState: Boolean): Boolean; // 检测门的状态,内部用来重置计时器
     function CompareMiniMap(const aMiniMap: TMiniMap): Boolean; // 比较小地图是否相同
-     procedure ResetManStopWatch;
+    procedure ResetManStopWatch;
   end;
 
   TZhuangbeiType = (zt未知, zt普通, zt高级, zt稀有, zt神器, zt传承, zt勇者, zt传说, zt史诗);
@@ -413,7 +413,7 @@ class function TGameConfig.Create: TGameConfig;
 begin
   Result.iWndState := 0;
   Result.bAutoRunGuard := True;
-  Result.iLoopDelay := 2;
+  Result.iLoopDelay := 20;
   Result.bVIP := True;
   Result.slBengshanji := 's';
   Result.slShizizhan := 'a';
@@ -428,7 +428,7 @@ begin
   Result.bVIP := True;
   Result.iPickUpGoodsTimeOut := 1000 * 10; // 10s
   Result.iFindManTimeOut := 3000; // 3s
-  Result.iManMoveTimeOut := 3000; // 3s
+  Result.iManMoveTimeOut := 6000; // 6s
   Result.iFindMonsterTimeOut := 3000; // 3s
   Result.iGetInfoTimeOut := 1000 * 30; // 30s
   Result.sMoveGoodsKeyCode := '3';
