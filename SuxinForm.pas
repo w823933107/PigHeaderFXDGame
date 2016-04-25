@@ -62,6 +62,7 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure chkLogViewClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure FormShow(Sender: TObject);
   private
     { Private declarations }
   public
@@ -114,6 +115,11 @@ end;
 procedure TConfigForm.FormDestroy(Sender: TObject);
 begin
   SaveConfig; // ±£¥Ê≈‰÷√
+end;
+
+procedure TConfigForm.FormShow(Sender: TObject);
+begin
+  LoadConfig(GameConfigManager.Config);
 end;
 
 procedure TConfigForm.LoadConfig(const aGameConfig: TGameConfig);

@@ -7,9 +7,9 @@ unit uGameEx;
 
 interface
 
-uses QWorker, uGameEx.Interf, System.SysUtils, uObj, Winapi.Windows,
+uses uGameEx.Interf, System.SysUtils, uObj, Winapi.Windows,
   Spring.Container, CodeSiteLogging, Vcl.Forms, uGameEx.RegisterClass, QPlugins,
-  System.Types;
+  System.Types, System.Threading, Winapi.ActiveX, System.Classes;
 
 type
 
@@ -18,8 +18,9 @@ type
   private
     FObj: IChargeObj;
     FMyObj: TMyObj;
-    FJob: IntPtr;
     FGameData: PGameData;
+    FCheckTask: ITask;
+    FMainTask: ITask;
   private
     FGameConfigManager: IGameConfigManager;
     FMap: IMap;
@@ -33,8 +34,8 @@ type
     FCheckTimeOut: ICheckTimeOut;
     FSkill: ISkill;
   private
-    procedure GameJob(AJob: PQJob); // 主逻辑作业
-    procedure CheckJob(AJob: PQJob); // 检测作业
+    procedure GameTask; // 主逻辑作业
+    procedure CheckTask; // 检测作业
     procedure LoopHandle; // 循环处理
     procedure InMapHandle; // 图内操作
     procedure OutMapHandle; // 图外操作
@@ -44,8 +45,8 @@ type
     procedure DoorClosedHandle(aMiniMap: TMiniMap; aManPoint: TPoint);
     procedure DoorOpenedHandle(aMiniMap: TMiniMap; aManPoint: TPoint);
   private
-    procedure GoToInMap(AJob: PQJob);
-    procedure ChangeRole(AJob: PQJob);
+    procedure GoToInMap;
+    procedure ChangeRole;
   public
     constructor Create();
     destructor Destroy; override;
@@ -72,15 +73,15 @@ implementation
 
 { TGame }
 
-procedure TGame.ChangeRole(AJob: PQJob);
+procedure TGame.ChangeRole;
 var
   x, y: OleVariant;
   iRet: Integer;
-
   procedure SelectMemu;
   begin
-    while (not AJob.IsTerminated) and (not Terminated) do
+    while (not Terminated) do
     begin
+      TTask.CurrentTask.CheckCanceled;
       iRet := FObj.FindStr(325, 91, 542, 221, '游戏菜单', clStrWhite, 1.0, x, y);
       if iRet > -1 then
       begin
@@ -97,8 +98,9 @@ var
   procedure GotoSelectRole;
 
   begin
-    while (not AJob.IsTerminated) and (not Terminated) do
+    while (not Terminated) do
     begin
+      TTask.CurrentTask.CheckCanceled;
       iRet := FObj.FindPic(364, 383, 436, 464, '选择角色.bmp', clPicOffsetZero,
         0.9, 0, x, y);
       if iRet > -1 then
@@ -127,8 +129,9 @@ var
     oldX: Integer; // 记录人物初始坐标
   begin
     oldX := 0;
-    while (not AJob.IsTerminated) and (not Terminated) do
+    while (not Terminated) do
     begin
+      TTask.CurrentTask.CheckCanceled;
       iRet := FObj.FindPic(38, 42, 617, 531, '左上角.bmp', clPicOffsetZero,
         0.8, 0, x, y);
       if iRet > -1 then
@@ -138,8 +141,9 @@ var
       end;
       Sleep(500);
     end;
-    while (not AJob.IsTerminated) and (not Terminated) do
+    while (not Terminated) do
     begin
+      TTask.CurrentTask.CheckCanceled;
       iRet := FObj.FindPic(38, 42, 617, 531, '左上角.bmp', clPicOffsetZero,
         0.8, 0, x, y);
       if iRet > -1 then
@@ -157,8 +161,9 @@ var
       end;
       Sleep(100);
     end;
-    while (not AJob.IsTerminated) and (not Terminated) do
+    while (not Terminated) do
     begin
+      TTask.CurrentTask.CheckCanceled;
       iRet := FObj.FindStr(211, 128, 774, 540, '黄金哥布林|赛丽亚|邮件箱',
         StrColorOffset('f7d65a'), 1.0, x, y);
       if iRet > -1 then
@@ -194,14 +199,15 @@ begin
 
 end;
 
-procedure TGame.CheckJob(AJob: PQJob);
+procedure TGame.CheckTask;
 var
   x, y: OleVariant;
   iRet: Integer;
   hGame: Integer;
 begin
-  while (not Terminated) and (not AJob.IsTerminated) do
+  while (not Terminated) do
   begin
+    TTask.CurrentTask.CheckCanceled;
     // 检测客户端是否存在
     hGame := FObj.FindWindow('地下城与勇士', '地下城与勇士');
     if hGame = 0 then
@@ -215,6 +221,7 @@ begin
       FObj.SetWindowState(hGame, 1);
     Sleep(2000);
   end;
+  FCheckTask := nil;
 end;
 
 constructor TGame.Create;
@@ -295,16 +302,19 @@ begin
     if FMonster.IsArriviedMonster(ptMonsterArrived) then
     begin
       // 调整方向
-      if ptMonsterArrived.x < (ptMan.x - 30) then
+      if FGameData.GameConfig.bNearAdjustDirection then
       begin
-        Obj.KeyPressChar('left');
-        Sleep(60);
-      end
-      else
-        if ptMonsterArrived.x > (ptMan.x + 30) then
-      begin
-        Obj.KeyPressChar('right');
-        Sleep(60);
+        if ptMonsterArrived.x < (ptMan.x - 30) then
+        begin
+          Obj.KeyPressChar('left');
+          Sleep(60);
+        end
+        else
+          if ptMonsterArrived.x > (ptMan.x + 30) then
+        begin
+          Obj.KeyPressChar('right');
+          Sleep(60);
+        end;
       end;
 
       // 达到怪物杀怪
@@ -370,7 +380,7 @@ begin
   FSkill := nil;
 end;
 
-procedure TGame.GameJob(AJob: PQJob);
+procedure TGame.GameTask;
 // 绑定游戏
   function BindGame: Integer;
   var
@@ -389,11 +399,11 @@ begin
   try
     try
       CodeSite.Send('start to run');
-      // AJob.Worker.ComNeeded(); // 初始化COM库 ,似乎加上了之后无法正常退出程序了
+      CoInitializeEx(nil, 0); // 初始化Com库
       FGameData^.GameConfig := FGameConfigManager.Config; // 读取配置文件
       FGameData^.Hwnd := BindGame; // 保存游戏窗口句柄
-      FGameData^.Job := AJob; // 保存主线程的作业对象
       CreateGameObjs(FGameData); // 创建需要使用的对象
+      FGameData.Terminated := False;
       LoopHandle; // 循环处理
     except
       on E: EGame do
@@ -402,24 +412,26 @@ begin
         Application.MessageBox(PWideChar(E.Message), '警告');
         CodeSite.Send('error operator');
       end;
-
     end;
   finally
     CodeSite.Send('start to clear ');
     FreeGameObjs;
+    FMainTask := nil;
+    CoUninitialize;
     // 清除所有作业 ,调用后似乎不能正确执行
   end;
 end;
 
-procedure TGame.GoToInMap(AJob: PQJob);
+procedure TGame.GoToInMap;
 var
   iRet: Integer;
   x, y: OleVariant;
   // 打开大地图
   procedure OpenLargeMap;
   begin
-    while (not AJob.IsTerminated) and (not Terminated) do
+    while (not Terminated) do
     begin
+      TTask.CurrentTask.CheckCanceled;
       iRet := FObj.FindPic(2, 4, 108, 48, '大地图.bmp', clPicOffsetZero,
         0.9, 0, x, y);
       if iRet > -1 then
@@ -436,8 +448,9 @@ var
 // 移动到地图附近
   procedure MoveToNearMap;
   begin
-    while (not AJob.IsTerminated) and (not Terminated) do
+    while (not Terminated) do
     begin
+      TTask.CurrentTask.CheckCanceled;
       iRet := FObj.FindPic(336, 444, 358, 467, '大指针.bmp', clPicOffsetZero,
         0.8, 0, x, y);
       if iRet > -1 then
@@ -460,8 +473,9 @@ var
 // 进入地图
   procedure DoInMap;
   begin
-    while (not AJob.IsTerminated) and (not Terminated) do
+    while (not Terminated) do
     begin
+      TTask.CurrentTask.CheckCanceled;
       // 发现打开了
       iRet := FObj.FindStr(696, 538, 790, 566, '返回城镇',
         StrColorOffset('ddc593'), 1.0, x, y);
@@ -483,8 +497,9 @@ var
   procedure SelectMap;
   begin
     // 进入到了选图位置
-    while (not AJob.IsTerminated) and (not Terminated) do
+    while (not Terminated) do
     begin
+      TTask.CurrentTask.CheckCanceled;
       iRet := FObj.FindPic(8, 269, 230, 470, '根特外围(未选中).bmp',
         clPicOffsetZero, 0.9, 0, x, y);
       // 如果是未选中状态
@@ -511,8 +526,9 @@ var
   end;
   procedure SelectMapLv;
   begin
-    while (not AJob.IsTerminated) and (not Terminated) do
+    while (not Terminated) do
     begin
+      TTask.CurrentTask.CheckCanceled;
       iRet := FObj.FindPic(8, 269, 230, 470,
         '普通.bmp|冒险.bmp|勇士.bmp|王者.bmp', clPicOffsetZero, 0.9, 0, x, y);
       if iRet > -1 then
@@ -635,14 +651,14 @@ procedure TGame.InMapHandle;
 
   procedure PickupGoods(aMiniMap: TMiniMap);
   begin
-   // if not FCheckTimeOut.IsInMapPickupGoodsTimeOut(aMiniMap) then
-   // begin
-      if FGoods.IsArrivedGoods then
-      begin
-        FMove.StopMove;
-        FGoods.PickupGoods;
-      end;
-   // end;
+    // if not FCheckTimeOut.IsInMapPickupGoodsTimeOut(aMiniMap) then
+    // begin
+    if FGoods.IsArrivedGoods then
+    begin
+      FMove.StopMove;
+      FGoods.PickupGoods;
+    end;
+    // end;
   end;
 
 var
@@ -677,7 +693,7 @@ begin
       warnning;
     end;
     // 虚弱报警
-    if IsWeak then
+    if IsWeakInMap then
     begin
       warnning;
     end;
@@ -705,10 +721,10 @@ begin
     FGameData.ManStrColor := clVip
   else
     FGameData.ManStrColor := clStrWhite;
-  Workers.Post(CheckJob, nil); // 投寄一个检测任务
+  FCheckTask := TTask.Run(CheckTask); // 运行检测任务
   while (not Terminated) do
   begin
-
+    TTask.CurrentTask.CheckCanceled;
     aLargeMap := FMap.LargeMap; // 获取大地图
     if FCheckTimeOut.IsOutMapTimeOut(aLargeMap) then // 检测是否在图外超时
       warnning;
@@ -726,7 +742,7 @@ end;
 
 procedure TGame.OutMapHandle;
 var
-  hChangeRole, hGotoInMap: THandle;
+  ChangeRoleTask, GotoInMapTask: ITask;
 begin
   CloseGameWindows; // 关闭所有窗口
   FMove.StopMove;
@@ -741,21 +757,21 @@ begin
     // 不虚弱检测疲劳
     if not IsHavePilao then
     begin
-      // 投寄换角色作业,并等待完成
-      hChangeRole := Workers.Post(ChangeRole, nil);
-      if Workers.WaitJob(hChangeRole, 1000 * 60 * 2, False) = wrTimeout then
+      // 开始换角色作业,并等待完成
+      ChangeRoleTask := TTask.Run(ChangeRole);
+      if not ChangeRoleTask.Wait(1000 * 60 * 2) then
       begin
-        Workers.ClearSingleJob(hChangeRole); // 等待完成,会立刻停止
+        ChangeRoleTask.Cancel;
         warnning;
       end;
     end
     else
     begin
-      // 投寄进图作业,并等待完成
-      hGotoInMap := Workers.Post(GoToInMap, nil);
-      if Workers.WaitJob(hGotoInMap, 1000 * 60 * 2, False) = wrTimeout then
+      // 开始进图作业,并等待完成
+      GotoInMapTask := TTask.Run(GoToInMap);
+      if not GotoInMapTask.Wait(1000 * 60 * 2) then
       begin
-        Workers.ClearSingleJob(hGotoInMap);
+        GotoInMapTask.Cancel;
         warnning;
       end;
     end;
@@ -763,20 +779,22 @@ begin
 end;
 
 procedure TGame.Start;
-var
-  JobState: TQJobState;
 begin
-  // 作业不存在时执行
-  if not Workers.PeekJobState(FJob, JobState) then
+  if not Assigned(FMainTask) then
   begin
-    FJob := Workers.Post(GameJob, nil);
+    FMainTask := TTask.Run(GameTask);
   end;
+
 end;
 
 procedure TGame.Stop;
 begin
-  Workers.ClearSingleJob(FJob);
-  Workers.Clear; // 清除所有作业
+  if Assigned(FMainTask) then
+  begin
+    FGameData.Terminated := True;
+    if FMainTask.Status = TTaskStatus.Running then
+      FMainTask.Cancel;
+  end;
 end;
 
 procedure TGame.UnknownMapHandle;

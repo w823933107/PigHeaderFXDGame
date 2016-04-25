@@ -95,7 +95,8 @@ var
   x, y: OleVariant;
 begin
   Result := TPoint.Zero;
-  iIndex := Obj.FindStr(aRect.Left, aRect.Top, aRect.Right, aRect.Bottom, '', '',
+  iIndex := Obj.FindStr(aRect.Left, aRect.Top, aRect.Right, aRect.Bottom,
+    '领|主|纵|火|犯|本|汀|克', StrColorOffset('ff00ff'),
     1.0, x, y);
   if iIndex <> -1 then
   begin

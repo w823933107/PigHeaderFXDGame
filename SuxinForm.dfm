@@ -15,6 +15,7 @@ object ConfigForm: TConfigForm
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
   object pgc1: TPageControl
@@ -68,7 +69,7 @@ object ConfigForm: TConfigForm
           Height = 21
           NumbersOnly = True
           TabOrder = 1
-          Text = '20'
+          Text = '10'
         end
         object udLoopDelay: TUpDown
           Left = 99
@@ -76,7 +77,7 @@ object ConfigForm: TConfigForm
           Width = 16
           Height = 21
           Associate = edtLoopDelay
-          Position = 20
+          Position = 10
           TabOrder = 2
         end
         object chkVip: TCheckBox

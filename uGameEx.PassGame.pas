@@ -2,8 +2,7 @@ unit uGameEx.PassGame;
 
 interface
 
-uses uGameEx.Interf, Spring, System.Types, System.SysUtils, CodeSiteLogging,
-  QWorker;
+uses uGameEx.Interf, Spring, System.Types, System.SysUtils, CodeSiteLogging;
 
 type
 
@@ -66,7 +65,7 @@ type
 
 implementation
 
-uses Spring.Container, windows, System.Threading;
+uses Spring.Container, windows, System.Threading, System.Classes;
 { TBox }
 
 function TBox.Close: Boolean;
@@ -268,10 +267,10 @@ end;
 
 procedure TPassGame.ClickCards;
 var
-  hJob: THandle;
+  task: ITask;
 begin
-  hJob := Workers.Post(
-    procedure(AJob: PQJob)
+  task := TTask.Run(
+    procedure
     var
       x, y: OleVariant;
       iRet: Integer;
@@ -279,8 +278,9 @@ begin
       I: Integer;
     begin
       bIsClick := False;
-      while (not Terminated) and (not AJob.IsTerminated) do
+      while (not Terminated) do
       begin
+        TTask.CurrentTask.CheckCanceled;
         iRet := Obj.FindPic(6, 25, 483, 559,
           '牌1.bmp|黄金卡牌5.bmp|黄金卡牌5Ex.bmp|双倍黄金卡牌5.bmp', clPicOffsetZero,
           0.9, 0, x, y);
@@ -311,11 +311,11 @@ begin
         end;
 
       end;
-    end, nil);
-  if Workers.WaitJob(hJob, 1000 * 60, False) = wrTimeout then
+    end);
+  if not task.Wait(1000 * 60) then
   begin
-    Workers.ClearSingleJob(hJob);
-    warnning;
+    task.Cancel;
+    Warnning;
   end;
 end;
 
@@ -369,7 +369,6 @@ end;
 
 procedure TPassGame.EndSell;
 var
-  hJob: THandle;
   task: ITask;
 begin
   // 发现出售
@@ -378,9 +377,6 @@ begin
   // 负重执行卖物
   // 卖物完毕,关闭所有窗口
   // 点击执行下一关
-  // hJob := Workers.Post(
-  // procedure(AJob: PQJob)
-  // //  begin
 
   task := TTask.Run(
     procedure
@@ -411,19 +407,12 @@ begin
 
       end;
     end);
-  // task.Start;
   if not task.Wait(1000 * 60 * 2) then
   begin
     task.Cancel;
-    warnning;
+    Warnning;
   end;
-  // end, nil);
 
-  // if Workers.WaitJob(hJob, 1000 * 60 , False) = wrTimeout then
-  // begin
-  // Workers.ClearSingleJob(hJob);
-  // warnning;
-  // end;
   OutputDebugString('------------------完成任务了------');
 
 end;
@@ -439,7 +428,7 @@ begin
   begin
     // 报警
     if GameData.GameConfig.bJiabaliWarning then
-      warnning;
+      Warnning;
   end;
 end;
 

@@ -10,7 +10,7 @@ interface
 // {$DEFINE USE_CODESITE}
 
 uses uGameEx.Interf, System.SysUtils, uObj, System.RegularExpressions,
-  CodeSiteLogging, QWorker, System.Types;
+  CodeSiteLogging, System.Types, System.Threading;
 
 type
 
@@ -26,10 +26,10 @@ type
     FExpertJobLv: Cardinal;
     FExpertJobCurExp: Cardinal;
     FExpertJobMaxExp: Cardinal;
-    function OpenOrCloseRoleInfo(AJob: PQJob; const aIsOpen: Boolean): Boolean;
+    function OpenOrCloseRoleInfo(const aIsOpen: Boolean): Boolean;
     // 打开或者关闭角色信息
-    function OpenRoleInfo(AJob: PQJob): Boolean; // 打开角色信息
-    function CloseRoleInfo(AJob: PQJob): Boolean; // 关闭角色信息
+    function OpenRoleInfo: Boolean; // 打开角色信息
+    function CloseRoleInfo: Boolean; // 关闭角色信息
     // 以下函数必须打开角色信息后进行操作
     function GetRoleName: string; // 获取角色名称,内部更新了带Lv的角色名,返回结果不包含Lv
     function GetRoleNameWithDec: string; // 获取带"|"的角色名,移除了数字
@@ -51,9 +51,9 @@ implementation
 // uses JclAnsiStrings;  //移除,改用使用自带的TryStrToInt功能
 { TRoleInfo }
 
-function TRoleInfoHandle.CloseRoleInfo(AJob: PQJob): Boolean;
+function TRoleInfoHandle.CloseRoleInfo: Boolean;
 begin
-  Result := OpenOrCloseRoleInfo(AJob, False);
+  Result := OpenOrCloseRoleInfo(False);
 end;
 
 function TRoleInfoHandle.GetCenterXOffset: TArray<TStrOffset>;
@@ -179,51 +179,52 @@ end;
 
 function TRoleInfoHandle.GetRoleInfo: TRoleInfo;
 var
-  hJob: THandle;
-  waitResult: TWaitResult;
+  task: ITask;
+  RoleInfo: PRoleInfo;
 begin
-  hJob := Workers.Post(
-    procedure(AJob: PQJob)
+  RoleInfo := @Result;
+  task := TTask.Run(
+    procedure()
     var
       StrOffset: TStrOffset;
       sCenterX: string;
-      RoleInfo: PRoleInfo;
     begin
-      RoleInfo := PRoleInfo(AJob.Data);
-      if OpenRoleInfo(AJob) then
+      if OpenRoleInfo then
       begin
-        RoleInfo^.Name := GetRoleName;
-        RoleInfo^.NameWithDec := GetRoleNameWithDec;
-        RoleInfo^.MainJob := GetMainJob;
-        RoleInfo^.ExpertJob := GetExpertJob;
-        RoleInfo^.ExpertJobLv := GetExpertJobLv;
-        RoleInfo^.ExpertJobCurExp := GetExpertJobCurExp;
-        RoleInfo^.ExpertJobMaxExp := GetExpertJobMaxExp;
-        RoleInfo^.Lv := GetLv;
-        RoleInfo^.CenterXOffset := GetCenterXOffset;
-        RoleInfo^.CenterYOffset := GetCenterYOffset;
-        CloseRoleInfo(AJob);
+        RoleInfo.Name := GetRoleName;
+        RoleInfo.NameWithDec := GetRoleNameWithDec;
+        RoleInfo.MainJob := GetMainJob;
+        RoleInfo.ExpertJob := GetExpertJob;
+        RoleInfo.ExpertJobLv := GetExpertJobLv;
+        RoleInfo.ExpertJobCurExp := GetExpertJobCurExp;
+        RoleInfo.ExpertJobMaxExp := GetExpertJobMaxExp;
+        RoleInfo.Lv := GetLv;
+        RoleInfo.CenterXOffset := GetCenterXOffset;
+        RoleInfo.CenterYOffset := GetCenterYOffset;
+        CloseRoleInfo();
         // -------- 以下为调试代码--------------------------
-        CodeSite.Send('Name', RoleInfo^.Name);
-        CodeSite.Send('NameWithDec', RoleInfo^.NameWithDec);
-        CodeSite.Send('MainJob', RoleInfo^.MainJob);
-        CodeSite.Send('ExpertJob', RoleInfo^.ExpertJob);
-        CodeSite.Send('ExpertJobLv', RoleInfo^.ExpertJobLv);
-        CodeSite.Send('ExpertJobCurExp', RoleInfo^.ExpertJobCurExp);
-        CodeSite.Send('ExpertJobMaxExp', RoleInfo^.ExpertJobMaxExp);
-        CodeSite.Send('Lv', RoleInfo^.Lv);
-        for StrOffset in RoleInfo^.CenterXOffset do
+        CodeSite.Send('Name', RoleInfo.Name);
+        CodeSite.Send('NameWithDec', RoleInfo.NameWithDec);
+        CodeSite.Send('MainJob', RoleInfo.MainJob);
+        CodeSite.Send('ExpertJob', RoleInfo.ExpertJob);
+        CodeSite.Send('ExpertJobLv', RoleInfo.ExpertJobLv);
+        CodeSite.Send('ExpertJobCurExp', RoleInfo.ExpertJobCurExp);
+        CodeSite.Send('ExpertJobMaxExp', RoleInfo.ExpertJobMaxExp);
+        CodeSite.Send('Lv', RoleInfo.Lv);
+        for StrOffset in RoleInfo.CenterXOffset do
         begin
           sCenterX := sCenterX + Format('(%s,%d)',
             [StrOffset.Str, StrOffset.OffsetX]);
         end;
         CodeSite.Send('CenterXOffset', sCenterX);
-        CodeSite.Send('CenterYOffset', RoleInfo^.CenterYOffset);
+        CodeSite.Send('CenterYOffset', RoleInfo.CenterYOffset);
       end;
-    end, @Result);
-  waitResult := Workers.WaitJob(hJob, 1000 * 30, False); // 等待30秒
-  if waitResult = wrTimeout then
-    raise EGame.Create('get role info time out');
+    end);
+  if not task.Wait(1000 * 60) then
+  begin
+    task.Cancel;
+    Warnning;
+  end;
 
 end;
 
@@ -294,8 +295,7 @@ begin
   end;
 end;
 
-function TRoleInfoHandle.OpenOrCloseRoleInfo(AJob: PQJob;
-const aIsOpen: Boolean): Boolean;
+function TRoleInfoHandle.OpenOrCloseRoleInfo(const aIsOpen: Boolean): Boolean;
 var
   X, Y: OleVariant;
   iRet: Integer;
@@ -303,8 +303,9 @@ begin
 {$IFDEF USE_CODESITE} CodeSite.TraceMethod(Self, 'OpenOrCloseRoleInfo');
 {$ENDIF}
   Result := False;
-  while (not Terminated) and (not AJob.IsTerminated) do // 检测线程
+  while (not Terminated) do // 检测线程
   begin
+    TTask.CurrentTask.CheckCanceled;
     iRet := Obj.FindStr(95, 80, 414, 165, '个人信息(M)', clWndOpen,
       1.0, X, Y);
     if aIsOpen then
@@ -323,9 +324,9 @@ begin
   end;
 end;
 
-function TRoleInfoHandle.OpenRoleInfo(AJob: PQJob): Boolean;
+function TRoleInfoHandle.OpenRoleInfo: Boolean;
 begin
-  Result := OpenOrCloseRoleInfo(AJob, True);
+  Result := OpenOrCloseRoleInfo(True);
 end;
 
 initialization

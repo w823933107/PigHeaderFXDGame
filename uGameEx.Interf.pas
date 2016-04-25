@@ -4,7 +4,7 @@ unit uGameEx.Interf;
 interface
 
 uses uObj, System.SysUtils, QWorker, System.Types, Spring,
-  CodeSiteLogging;
+  CodeSiteLogging, System.Threading, System.SyncObjs;
 
 const
   // 路径配置
@@ -145,7 +145,7 @@ type
     GameConfig: TGameConfig;
     RoleInfo: TRoleInfo;
     ManStrColor: string; // 人物名字颜色
-    Job: PQJob;
+    Terminated: Boolean;
   end;
 
   TGameDirectionLR = (
@@ -201,9 +201,12 @@ type
   // 基础自插件服务,方便支持插件框架
   TGameBase = class(TInterfacedObject)
   private
+    class var FLock: TCriticalSection;
+    class constructor Create();
+    class destructor Destroy;
+  private
     FGameData: PGameData;
     function GetObj: IChargeObj;
-    function GetJob: PQJob;
     function GetTerminated: Boolean;
     function GetMyObj: TMyObj;
   protected
@@ -221,12 +224,12 @@ type
     // 是否有疲劳
     function IsHavePilao: Boolean;
     function IsWeak: Boolean;
+    function IsWeakInMap: Boolean;
   public
     property Terminated: Boolean read GetTerminated; // 主线程是否被要求终止
     property GameData: PGameData read FGameData write SetGameData; // 全局信息
     property MyObj: TMyObj read GetMyObj;
     property Obj: IChargeObj read GetObj;
-    property Job: PQJob read GetJob;
   end;
 
   // ---------------一下为游戏必要的基础接口---------------------
@@ -260,7 +263,7 @@ type
     function GetPoint: TPoint;
     procedure SetManPoint(const value: TPoint);
     function GetIsExistMonster: Boolean;
- //   function GetIsArriviedMonster: Boolean;
+    // function GetIsArriviedMonster: Boolean;
 
     function IsArriviedMonster(var aMonsterPoint: TPoint): Boolean;
     property ManPoint: TPoint write SetManPoint; // 寻找怪物依赖于人物坐标
@@ -406,9 +409,9 @@ implementation
 class function TGameConfig.Create: TGameConfig;
 begin
   Result.iWndState := 0;
-  Result.bAutoRunGuard := False;
-  Result.iLoopDelay := 20;
-  Result.bVIP := False;
+  Result.bAutoRunGuard := True;
+  Result.iLoopDelay := 2;
+  Result.bVIP := True;
   Result.slBengshanji := 's';
   Result.slShizizhan := 'a';
   Result.slBengshanliedizhan := 'd';
@@ -419,7 +422,7 @@ begin
   Result.slMiehunzhishou := 'e';
   Result.slShihunzhishou := 'q';
   Result.slXueqizhiren := 'w';
-  Result.bVIP := False;
+  Result.bVIP := True;
   Result.iPickUpGoodsTimeOut := 1000 * 10; // 10s
   Result.iFindManTimeOut := 3000; // 3s
   Result.iManMoveTimeOut := 3000; // 3s
@@ -429,7 +432,7 @@ begin
   Result.imaxZhuangbeiNum := 70;
   Result.iResetMoveStateInterval := 3000 * 10; // 30s
   Result.bResetMoveState := True;
-  Result.bRepair := True;
+  Result.bRepair := False;
   Result.iInMapTimeOut := 1000 * 60 * 3; // 3m
   Result.slBaiguiyexing := 'q';
   Result.slSilingzhifu := 'w';
@@ -446,11 +449,11 @@ begin
   Result.slShaluluanwu := 'z';
   Result.iKuangzhanOffsetY := 172;
   Result.iSilingOffsetY := 178;
-  Result.bNearAdjustDirection := False;
-  Result.bJiabaliWarning := True;
+  Result.bNearAdjustDirection := True;
+  Result.bJiabaliWarning := False;
   Result.bWarning := True;
   Result.iMapLv := 1;
-  Result.bLogView := True;
+  Result.bLogView := False;
 end;
 
 { TGameBase }
@@ -458,16 +461,20 @@ end;
 procedure TGameBase.CloseGameWindows;
 var
   hJob: THandle;
+  task: ITask;
 begin
-  hJob := Workers.Post(
-    procedure(AJob: PQJob)
+  task := TTask.Run(
+    procedure
     var
       iRet: Integer;
       x, y: OleVariant;
     begin
-      while not AJob.IsTerminated do
+      while not Terminated do
       begin
-        sleep(100);
+        TTask.CurrentTask.CheckCanceled;
+        iRet := Obj.FindStr(0, 0, 800, 600, '网络连接中断', clStrWhite, 1.0, x, y);
+        if iRet > -1 then // 如果是网络中断那么不执行关闭窗口
+          break;
         iRet := Obj.FindStr(0, 0, 800, 600, '关闭|返回城镇', StrColorOffset('ddc593'),
           1.0, x, y);
         if iRet > -1 then
@@ -493,18 +500,20 @@ begin
         end;
         break;
       end;
-    end, nil);
-  if Workers.WaitJob(hJob, 1000 * 30, False) = wrTimeout then
-  begin
-    Warnning;
-  end;
-  // ddc593-000000
 
+    end);
+  if not task.Wait(1000 * 60) then
+    task.Cancel;
 end;
 
-function TGameBase.GetJob: PQJob;
+class constructor TGameBase.Create;
 begin
-  Result := GameData.Job;
+  TGameBase.FLock := TCriticalSection.Create;
+end;
+
+class destructor TGameBase.Destroy;
+begin
+  TGameBase.FLock.Free;
 end;
 
 function TGameBase.GetMyObj: TMyObj;
@@ -519,7 +528,7 @@ end;
 
 function TGameBase.GetTerminated: Boolean;
 begin
-  Result := Job.IsTerminated;
+  Result := FGameData.Terminated;
 end;
 
 function TGameBase.IsHavePilao: Boolean;
@@ -538,9 +547,30 @@ var
   x, y: OleVariant;
   iRet: Integer;
 begin
+  Result := False;
+  CloseGameWindows;
+  iRet := Obj.FindPic(242, 488, 800, 569, '虚弱.bmp', clPicOffsetZero,
+    0.9, 0, x, y);
+  if iRet > -1 then
+    Result := True
+  else
+  begin
+    iRet := Obj.FindStr(9, 514, 67, 577, '100', clStrWhite, 1.0, x, y);
+    Result := iRet = -1;
+  end;
+end;
+
+function TGameBase.IsWeakInMap: Boolean;
+var
+  x, y: OleVariant;
+  iRet: Integer;
+begin
+  Result := False;
+  CloseGameWindows;
   iRet := Obj.FindPic(242, 488, 800, 569, '虚弱.bmp', clPicOffsetZero,
     0.9, 0, x, y);
   Result := iRet > -1;
+
 end;
 
 procedure TGameBase.MoveToFixPoint;
@@ -563,51 +593,50 @@ begin
 end;
 
 procedure TGameBase.Warnning;
+var
+  task: ITask;
 begin
-  // MonitorExit();
-
-  Workers.Post(
-    procedure(AJob: PQJob)
+  FLock.Acquire;
+  task := TTask.Run(
+    procedure
     var
       hPlay: THandle;
       sw: TStopWatch;
     begin
-      hPlay := Obj.Play('wife.mp3');
-      sw := TStopWatch.StartNew;
-      while (not Terminated) and (not AJob.IsTerminated) do
+      if GameData.GameConfig.bWarning then
       begin
-        if sw.ElapsedMilliseconds >= 1000 * 60 * 10 then
+        hPlay := Obj.Play('wife.mp3');
+        sw := TStopWatch.StartNew;
+        while (not Terminated) do
         begin
-          Obj.Stop(hPlay);
-          raise EGame.Create('play warning time out'); // 报警超时了终止
+          TTask.CurrentTask.CheckCanceled;
+          if sw.ElapsedMilliseconds >= 1000 * 60 * 10 then
+          begin
+            Obj.Stop(hPlay);
+            raise EGame.Create('play warning time out'); // 报警超时了终止
+          end;
+          if sw.ElapsedMilliseconds >= 1000 * 60 * 3 then
+          begin
+            Obj.Stop(hPlay);
+            hPlay := Obj.Play('wife.mp3');
+          end;
+          sleep(500);
         end;
-        if sw.ElapsedMilliseconds >= 1000 * 60 * 3 then
-        begin
-          Obj.Stop(hPlay);
-          hPlay := Obj.Play('wife.mp3');
-        end;
-        sleep(500);
-      end;
-      sleep(200);
-      Obj.Stop(hPlay);
-      // raise EGame.Create('warnning is stopped');
-      { hPlay := 0;
-        sw := TStopWatch.Create;
+        sleep(200);
+        Obj.Stop(hPlay);
+      end
+      else
+      begin
         while not Terminated do
         begin
-        if hPlay = 0 then
-        hPlay := Obj.Play('wife.mp3');
-        if not sw.IsRunning then
-        sw.Start;
-
-        if sw.ElapsedMilliseconds > 1000 * 60 * 3 then
-        begin
-        Obj.Stop(hPlay);
-        hPlay := 0;
+          sleep(1000);
+          TTask.CurrentTask.CheckCanceled;
         end;
-        Sleep(500);
-        end; }
-    end, nil);
+      end;
+
+    end);
+  task.Wait();
+  FLock.Release;
 end;
 
 { TRectHelper }
