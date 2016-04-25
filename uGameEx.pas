@@ -168,6 +168,7 @@ var
         StrColorOffset('f7d65a'), 1.0, x, y);
       if iRet > -1 then
       begin
+        Sleep(5000);
         CloseGameWindows;
         Break;
       end
@@ -196,7 +197,12 @@ begin
     (GameData.RoleInfo.MainJob <> mjLinghunshougezhe)
   then
     warnning;
-
+  // 等级检测
+  if GameData.RoleInfo.Lv <= 50 then
+    warnning;
+  // 等级较大的重新设置地图等级
+  if GameData.RoleInfo.Lv >= 80 then
+    GameData.GameConfig.iMapLv := 3;
 end;
 
 procedure TGame.CheckTask;
