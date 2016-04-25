@@ -413,6 +413,7 @@ begin
       CoInitializeEx(nil, 0); // 初始化Com库
       FGameData^.GameConfig := FGameConfigManager.Config; // 读取配置文件
       FGameData^.Hwnd := BindGame; // 保存游戏窗口句柄
+      FGameData.Terminated := False;
       CreateGameObjs(FGameData); // 创建需要使用的对象
       LoopHandle; // 循环处理
     except
@@ -427,7 +428,7 @@ begin
     FreeGameObjs;
     FMainTask := nil;
     CoUninitialize;
-    FGameData.Terminated := False;
+
     // 清除所有作业 ,调用后似乎不能正确执行
   end;
 end;
@@ -628,7 +629,7 @@ procedure TGame.InMapHandle;
     iRet: Integer;
     x, y: OleVariant;
   begin
-    iRet := FObj.CmpColor(37, 558, 'bb1111-333333', 1.0);
+    iRet := FObj.CmpColor(37, 558, 'bb1111-333333', 0.9);
     if iRet = 1 then
     begin
       iRet := FObj.FindPic(80, 553, 270, 592, '达人HP药剂.bmp', clPicOffsetZero,
@@ -809,7 +810,7 @@ end;
 
 procedure TGame.Start;
 begin
-  if not Assigned(FMainTask) then
+  if (not Assigned(FMainTask)) and (not Assigned(FCheckTask)) then
   begin
     FMainTask := TTask.Run(GameTask);
   end;

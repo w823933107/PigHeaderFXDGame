@@ -58,6 +58,14 @@ begin
     FStopWatchs[swManFind].Stop;
     FStopWatchs[swMonsterFind].Stop;
     FOldDoorState := aDoorState;
+
+    FStopWatchs[swInMapPickGoodsOpened].Reset;
+    FStopWatchs[swInMapPickGoods].Reset;
+    FStopWatchs[swInMapLong].Reset;
+    FStopWatchs[swManMove].Reset;
+    FStopWatchs[swManFind].Reset;
+    FStopWatchs[swMonsterFind].Reset;
+    FOldDoorState := aDoorState;
   end;
 end;
 
@@ -72,6 +80,13 @@ begin
     FStopWatchs[swManMove].Stop;
     FStopWatchs[swManFind].Stop;
     FStopWatchs[swMonsterFind].Stop;
+
+    FStopWatchs[swInMapPickGoodsOpened].Reset;
+    FStopWatchs[swInMapPickGoods].Reset;
+    FStopWatchs[swInMapLong].Reset;
+    FStopWatchs[swManMove].Reset;
+    FStopWatchs[swManFind].Reset;
+    FStopWatchs[swMonsterFind].Reset;
     FOldMiniMap := aMiniMap;
   end;
 end;
@@ -142,25 +157,25 @@ function TCheckTimeOut.IsInMapPickupGoodsOpenedTimeOut(
 begin
   Result := False; // 设置默认值
   // 如果上一次和这一次地图相同
-  if FOldMiniMapOpened = aMiniMap then
+  // if FOldMiniMapOpened = aMiniMap then
+  // begin
+  // 是否运行
+  if FStopWatchs[swInMapPickGoodsOpened].IsRunning then
   begin
-    // 是否运行
-    if FStopWatchs[swInMapPickGoodsOpened].IsRunning then
-    begin
-      Result := FStopWatchs[swInMapPickGoodsOpened].ElapsedMilliseconds >=
-        GameData.GameConfig.iPickUpGoodsTimeOut
-    end
-    else
-    begin
-      FStopWatchs[swInMapPickGoodsOpened].Start; // 开始运行
-    end;
+    Result := FStopWatchs[swInMapPickGoodsOpened].ElapsedMilliseconds >=
+      GameData.GameConfig.iPickUpGoodsTimeOut
   end
   else
   begin
-    FStopWatchs[swInMapPickGoodsOpened].Stop;
-    // FStopWatchs[swInMapPickGoodsOpened].Reset; // 恢复默认
-    FOldMiniMapOpened := aMiniMap; // 记录上一次的
+    FStopWatchs[swInMapPickGoodsOpened].Start; // 开始运行
   end;
+  // end
+  // else
+  // begin
+  // FStopWatchs[swInMapPickGoodsOpened].Stop;
+  // FStopWatchs[swInMapPickGoodsOpened].Reset; // 恢复默认
+  // FOldMiniMapOpened := aMiniMap; // 记录上一次的
+  // end;
 end;
 
 function TCheckTimeOut.IsManFindTimeOut(const aManPoint: TPoint): Boolean;
@@ -185,7 +200,7 @@ begin
   begin
     // 找到人物停止计时
     FStopWatchs[swManFind].Stop;
-    // FStopWatchs[swManFind].Reset;
+    FStopWatchs[swManFind].Reset;
 
   end;
 end;
@@ -213,7 +228,7 @@ begin
     begin
       // 和上次坐标不相同,停止计时
       FStopWatchs[swManMove].Stop;
-      // FStopWatchs[swManMove].Reset;
+      FStopWatchs[swManMove].Reset;
 
     end;
     FOldManPoint := aManPoint; // 记录当前坐标
@@ -242,7 +257,7 @@ begin
   begin
     // 发现怪物
     FStopWatchs[swMonsterFind].Stop;
-    // FStopWatchs[swMonsterFind].Reset;
+    FStopWatchs[swMonsterFind].Reset;
   end;
 
 end;
