@@ -38,18 +38,17 @@ type
   EGame = Exception;
 
   IFormService = interface
-    ['{B44D6B79-9508-45A7-90E9-392074533F5D}']
+['{8AE6BAA4-327F-4C6E-823F-2D72ACC3387A}']
     function ShowModal: Integer;
     procedure Show;
   end;
 
   IGameService = interface
-    ['{2BE5BFB6-1647-461E-A668-F34A3331FBAC}']
+['{8AC628FC-A8EF-4EAD-98E4-04E7DF32FCEB}']
     procedure Prepare;
     procedure Start;
     procedure Stop;
     function Guard(): Boolean;
-    procedure SetHandle(const aHandle: THandle);
   end;
 
   TCreateForm = function(aHandle: THandle): IFormService;

@@ -8,7 +8,8 @@ unit uGameEx;
 interface
 
 uses uGameEx.Interf, System.SysUtils, uObj, Winapi.Windows,
-  Spring.Container, CodeSiteLogging, Vcl.Forms, uGameEx.RegisterClass, QPlugins,
+  Spring.Container, CodeSiteLogging, Vcl.Forms,
+  uGameEx.RegisterClass, {QPlugins,}
   System.Types, System.Threading, Winapi.ActiveX, System.Classes;
 
 type
@@ -56,12 +57,11 @@ type
   end;
 
   // 为了支持插件,进行了再次封装
-  TGameService = class(TQService, IGameService)
+  TGameService = class(TInterfacedObject, IGameService)
   private
     FGame: TGame;
   public
     destructor Destroy; override;
-    procedure SetHandle(const aHandle: THandle);
     procedure Prepare; // 由于部分功能放在插件的钩子函数中会导致程序卡住不出来,所以只能这样了
     procedure Start; // 开始
     function Guard: Boolean; // 如果启用了保护返回true,否则返回false
@@ -70,10 +70,10 @@ type
 
 implementation
 
-
 { TGame }
 
 procedure TGame.ChangeRole;
+
 var
   x, y: OleVariant;
   iRet: Integer;
@@ -125,6 +125,7 @@ var
   end;
 
   procedure GotoInGame;
+
   var
     oldX: Integer; // 记录人物初始坐标
   begin
@@ -200,6 +201,7 @@ begin
 end;
 
 procedure TGame.CheckTask;
+
 var
   x, y: OleVariant;
   iRet: Integer;
@@ -283,6 +285,7 @@ begin
 end;
 
 procedure TGame.DoorClosedHandle(aMiniMap: TMiniMap; aManPoint: TPoint);
+
 var
   ptMan, ptMonster, ptMonsterArrived: TPoint;
 begin
@@ -331,6 +334,7 @@ begin
 end;
 
 procedure TGame.DoorOpenedHandle(aMiniMap: TMiniMap; aManPoint: TPoint);
+
 var
   ptMan, ptDoor, ptGoods: TPoint;
 begin
@@ -383,6 +387,7 @@ end;
 procedure TGame.GameTask;
 // 绑定游戏
   function BindGame: Integer;
+
   var
     iBind: Integer;
   begin
@@ -423,6 +428,7 @@ begin
 end;
 
 procedure TGame.GoToInMap;
+
 var
   iRet: Integer;
   x, y: OleVariant;
@@ -570,40 +576,49 @@ begin
 end;
 
 function TGame.Guard(): Boolean;
+
 var
   iRet: Integer;
   sPath: string;
+  aObj: IChargeObj;
 begin
   Result := False;
   sPath := GetCurrentDir;
+   aObj := TObjFactory.CreateChargeObj;
   if FGameConfigManager.Config.bAutoRunGuard then
   begin
-    iRet := Obj.SetSimMode(2);
-    if iRet <> 1 then
-    begin
-      Application.MessageBox(PChar('硬件驱动加载失败,错误码:' + iRet.ToString), '错误');
-      Application.Terminate;
-    end;
     iRet := Obj.DmGuard(1, 'f1');
     if iRet <> 1 then
     begin
-      Application.MessageBox(PChar('f1盾开启失败,错误码:' + iRet.ToString), '错误');
+      CodeSite.Send('f1盾开启失败');
+      MessageBox(0, PChar('f1盾开启失败,错误码:' + iRet.ToString), '错误', MB_OK);
       Application.Terminate;
     end;
     ChDir(sPath);
+    iRet := Obj.SetSimMode(2);
+    if iRet <> 1 then
+    begin
+      CodeSite.Send('硬件驱动加载失败');
+      MessageBox(0, PChar('硬件驱动加载失败,错误码:' + iRet.ToString), '错误', MB_OK);
+      Application.Terminate;
+    end;
     iRet := Obj.DmGuard(1, 'block');
     if iRet <> 1 then
     begin
-      Application.MessageBox(PChar('block驱动加载失败,错误码:' + iRet.ToString), '错误');
+      CodeSite.Send('block驱动加载失败');
+      MessageBox(0, PChar('block驱动加载失败,错误码:' + iRet.ToString), '错误', MB_OK);
       Application.Terminate;
     end;
+        MessageBox(0, '1', '错误', MB_OK);
     Result := True;
+
   end;
 end;
 
 procedure TGame.InMapHandle;
 // 加血
   procedure HpHandle;
+
   var
     iRet: Integer;
     x, y: OleVariant;
@@ -712,6 +727,7 @@ begin
 end;
 
 procedure TGame.LoopHandle;
+
 var
   aLargeMap: TLargeMap;
 begin
@@ -741,6 +757,7 @@ begin
 end;
 
 procedure TGame.OutMapHandle;
+
 var
   ChangeRoleTask, GotoInMapTask: ITask;
 begin
@@ -820,11 +837,6 @@ begin
   FGame := TGame.Create;
 end;
 
-procedure TGameService.SetHandle(const aHandle: THandle);
-begin
-  Application.Handle := aHandle;
-end;
-
 procedure TGameService.Start;
 begin
   FGame.Start;
@@ -839,12 +851,12 @@ initialization
 
 TObjConfig.ChargeFullPath := '.\Bin\Charge.dll'; // 设置插件路径
 RegisterGameClass;
-RegisterServices('Services/Game', [TGameService.Create(IGameService,
-  'GameService')]);
+// RegisterServices('Services/Game', [TGameService.Create(IGameService,
+// 'GameService')]);
 
 finalization
 
-UnregisterServices('Services/Game', ['GameService']);
+// UnregisterServices('Services/Game', ['GameService']);
 CleanupGlobalContainer;
 
 end.

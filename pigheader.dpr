@@ -13,6 +13,7 @@ library pigheader;
 uses
   System.SysUtils,
   System.Classes,
+  Vcl.Forms,
   Spring.Container,
   uGameEx.Interf in 'uGameEx.Interf.pas',
   uGameEx in 'uGameEx.pas',
@@ -28,11 +29,27 @@ uses
   uGameEx.Skill in 'uGameEx.Skill.pas',
   uObj in 'uObj.pas',
   uGameEx.RegisterClass in 'uGameEx.RegisterClass.pas',
-  SuxinForm in 'SuxinForm.pas' {ConfigForm},
+  SuxinForm in 'SuxinForm.pas' {ConfigForm} ,
   uGameEx.PassGame in 'uGameEx.PassGame.pas',
   uGameEx.CheckTimeOut in 'uGameEx.CheckTimeOut.pas';
 
 {$R *.res}
+
+
+
+function CreateGameService: IGameService;
+begin
+  Result := tgameservice.Create();
+end;
+
+function CreateFormService(aHandle: THandle): IFormService;
+begin
+  Application.Handle := aHandle;
+   Result := TConfigForm.Create(Application);
+ // Application.CreateForm(TConfigForm, Result);
+end;
+
+exports CreateGameService, CreateFormService;
 
 begin
   ReportMemoryLeaksOnShutdown := Boolean(DebugHook);

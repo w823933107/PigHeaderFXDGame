@@ -2,7 +2,8 @@ program “’‹∞;
 
 uses
   Vcl.Forms,
-  YixinForm in 'YixinForm.pas' {Form3};
+  YixinForm in 'YixinForm.pas' {Form3},
+  uGameEx in 'uGameEx.pas';
 
 {$R *.res}
 
