@@ -235,6 +235,7 @@ begin
   // 创建并初始化对象
   New(FGameData);
   FObj := TObjFactory.CreateChargeObj;
+  FGameData.Terminated := False;
   FGameData.Obj := FObj;
   GameData := FGameData;
   FMyObj := TObjFactory.CreateMyObj(FObj);
@@ -290,16 +291,15 @@ end;
 
 procedure TGame.DoorClosedHandle(aMiniMap: TMiniMap; aManPoint: TPoint);
 var
-  ptMan, ptMonster, ptMonsterArrived: TPoint;
+  ptMonster, ptMonsterArrived: TPoint;
 begin
-  ptMan := aManPoint;
-  FMonster.ManPoint := ptMan;
+  FMonster.ManPoint := aManPoint;
   ptMonster := FMonster.Point; // 获取怪物坐标
   // 长时间未获得怪物坐标进行寻怪
   if FCheckTimeOut.IsMonsterFindTimeOut(ptMonster) then
   begin
     FMove.StopMove;
-    FMove.MoveToFindMonster(ptMan, aMiniMap);
+    FMove.MoveToFindMonster(aManPoint, aMiniMap);
     Exit;
   end;
   // 移动向怪物
@@ -310,26 +310,26 @@ begin
       // 调整方向
       if FGameData.GameConfig.bNearAdjustDirection then
       begin
-        if ptMonsterArrived.x < (ptMan.x - 30) then
+        if ptMonsterArrived.x < (aManPoint.x - 30) then
         begin
           Obj.KeyPressChar('left');
           Sleep(60);
         end
         else
-          if ptMonsterArrived.x > (ptMan.x + 30) then
+          if ptMonsterArrived.x > (aManPoint.x + 30) then
         begin
           Obj.KeyPressChar('right');
           Sleep(60);
         end;
       end;
-
       // 达到怪物杀怪
       FMove.StopMove;
       FSkill.ReleaseSkill;
+      FCheckTimeOut.ResetManStopWatch;
     end
     else
     begin
-      FMove.MoveToMonster(ptMan, ptMonster, aMiniMap);
+      FMove.MoveToMonster(aManPoint, ptMonster, aMiniMap);
     end;
 
   end;
@@ -338,23 +338,23 @@ end;
 
 procedure TGame.DoorOpenedHandle(aMiniMap: TMiniMap; aManPoint: TPoint);
 var
-  ptMan, ptDoor, ptGoods: TPoint;
+  ptDoor, ptGoods: TPoint;
 begin
-  ptMan := aManPoint;
+
   // 10s捡物
   if not FCheckTimeOut.IsInMapPickupGoodsOpenedTimeOut(aMiniMap) then
   begin
-    FGoods.ManPoint := ptMan; // 用来计算最近物品坐标
-    ptGoods := FGoods.Point;
+    FGoods.ManPoint := aManPoint; // 用来计算最近物品坐标
+    ptGoods := FGoods.Point; // 获取物品坐标
     if not ptGoods.IsZero then
     begin
       // 有物品走向物品,不继续执行进门
-      FMove.MoveToGoods(ptMan, ptGoods, aMiniMap);
+      FMove.MoveToGoods(aManPoint, ptGoods, aMiniMap);
       Exit;
     end;
   end;
   // 超时进门
-  FDoor.ManPoint := ptMan;
+  FDoor.ManPoint := aManPoint;
   FDoor.MiniMap := aMiniMap;
   if FDoor.IsArrviedDoor then // 到达门,进门
   begin
@@ -363,10 +363,10 @@ begin
   end
   else
   begin
-    ptDoor := FDoor.Point;
+    ptDoor := FDoor.Point; // 获得门坐标
     if not ptDoor.IsZero then
     begin
-      FMove.MoveToDoor(ptMan, ptDoor, aMiniMap);
+      FMove.MoveToDoor(aManPoint, ptDoor, aMiniMap); // 进门
     end;
   end;
 
@@ -409,11 +409,9 @@ begin
       FGameData^.GameConfig := FGameConfigManager.Config; // 读取配置文件
       FGameData^.Hwnd := BindGame; // 保存游戏窗口句柄
       CreateGameObjs(FGameData); // 创建需要使用的对象
-      FGameData.Terminated := False;
       LoopHandle; // 循环处理
     except
       on E: EGame do
-      // MessageBox(0, PWideChar(E.Message), '警告', MB_OK);
       begin
         Application.MessageBox(PWideChar(E.Message), '警告');
         CodeSite.Send('error operator');
@@ -424,6 +422,7 @@ begin
     FreeGameObjs;
     FMainTask := nil;
     CoUninitialize;
+    FGameData.Terminated := False;
     // 清除所有作业 ,调用后似乎不能正确执行
   end;
 end;
@@ -673,6 +672,7 @@ procedure TGame.InMapHandle;
     begin
       FMove.StopMove;
       FGoods.PickupGoods;
+      FCheckTimeOut.ResetManStopWatch;
     end;
     // end;
   end;
@@ -680,6 +680,7 @@ procedure TGame.InMapHandle;
 var
   aMiniMap: TMiniMap;
   ptMan: TPoint;
+  bDoorState: Boolean;
 begin
   aMiniMap := FMap.MiniMap; // 获取小地图
   case aMiniMap of
@@ -714,7 +715,10 @@ begin
       warnning;
     end;
     PickupGoods(aMiniMap); // 捡物
-    if FDoor.IsOpen then
+    bDoorState := FDoor.IsOpen;
+    if not FCheckTimeOut.CompareMiniMap(aMiniMap) then
+      FMove.StopMove; // 停止
+    if bDoorState then
     begin
       DoorOpenedHandle(aMiniMap, ptMan)
     end
@@ -733,14 +737,14 @@ var
 begin
   CloseGameWindows; // 关闭所有窗口
   FGameData.RoleInfo := FRoleInfoHandle.GetRoleInfo; // 获取角色信息,获取失败抛出异常
-  if FGameData.GameConfig.bVIP then
+  if FGameData.GameConfig.bVIP then // 依据类型设置字的颜色
     FGameData.ManStrColor := clVip
   else
     FGameData.ManStrColor := clStrWhite;
   FCheckTask := TTask.Run(CheckTask); // 运行检测任务
   while (not Terminated) do
   begin
-    TTask.CurrentTask.CheckCanceled;
+    TTask.CurrentTask.CheckCanceled; // 检测
     aLargeMap := FMap.LargeMap; // 获取大地图
     if FCheckTimeOut.IsOutMapTimeOut(aLargeMap) then // 检测是否在图外超时
       warnning;

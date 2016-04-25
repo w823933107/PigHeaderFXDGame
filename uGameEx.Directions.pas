@@ -152,9 +152,9 @@ begin
   if iRet > -1 then
   begin
     // 上面左边那个
-    r1 := TRect.Create(x - 210, y + 193, x - 110, y + 287);
+    r1 := TRect.Create(x - 210, y + 193, x - 110, y + 280);
     // 上面右边那个
-    r2 := TRect.Create(x - 131, y + 173, x - 27, y + 287);
+    r2 := TRect.Create(x - 131, y + 173, x - 27, y + 280);
     r2_1 := TRect.Create(x - 131, y + 173, x - 41, y + 253);
     // 上面下边那个
     r3 := TRect.Create(x - 154, y + 280, x - 67, y + 297);
@@ -163,7 +163,7 @@ begin
     // 下面左边处理
     r4_1 := TRect.Create(x - 63, y + 330, x + 22, y + 419);
     // 下面右边那个
-    r5 := TRect.Create(x, y + 296, x + 97, y + 419);
+    r5 := TRect.Create(x, y + 296, x + 97, y + 410);
     r5_1 := TRect.Create(x, y + 298, x + 85, y + 400);
     // 下面上边那个
     r6 := TRect.Create(x - 70, y + 322, x + 113, y + 345);
@@ -3968,7 +3968,6 @@ begin
 end;
 
 initialization
-
 
 
 finalization

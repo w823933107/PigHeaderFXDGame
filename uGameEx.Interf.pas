@@ -367,6 +367,9 @@ type
     function IsInMapPickupGoodsTimeOut(const aMiniMap: TMiniMap): Boolean;
     function IsInMapLongTimeOut(const aMiniMap: TMiniMap): Boolean;
     function IsOutMapTimeOut(const aLargeMap: TLargeMap): Boolean;
+    function CompareDoorState(aDoorState: Boolean): Boolean; // 检测门的状态,内部用来重置计时器
+    function CompareMiniMap(const aMiniMap: TMiniMap): Boolean; // 比较小地图是否相同
+     procedure ResetManStopWatch;
   end;
 
   TZhuangbeiType = (zt未知, zt普通, zt高级, zt稀有, zt神器, zt传承, zt勇者, zt传说, zt史诗);
@@ -566,7 +569,6 @@ var
   iRet: Integer;
 begin
   Result := False;
-  CloseGameWindows;
   iRet := Obj.FindPic(242, 488, 800, 569, '虚弱.bmp', clPicOffsetZero,
     0.9, 0, x, y);
   Result := iRet > -1;
@@ -605,19 +607,23 @@ begin
     begin
       if GameData.GameConfig.bWarning then
       begin
+        CodeSite.Send('bbbbbbbbbbbbbbbbb');
         hPlay := Obj.Play('wife.mp3');
-        sw := TStopWatch.StartNew;
+        sw := TStopWatch.StartNew; // 计时
         while (not Terminated) do
         begin
+          CodeSite.Send('aaaaaaaaaaaaaa');
           TTask.CurrentTask.CheckCanceled;
-          if sw.ElapsedMilliseconds >= 1000 * 60 * 10 then
+          if sw.ElapsedMilliseconds >= (1000 * 60 * 10) then
           begin
-            Obj.Stop(hPlay);
-            raise EGame.Create('play warning time out'); // 报警超时了终止
+            Obj.Stop(hPlay); // 超出10分钟停止报警
+            sleep(100);
+            break;
           end;
-          if sw.ElapsedMilliseconds >= 1000 * 60 * 3 then
+          if sw.ElapsedMilliseconds >= (1000 * 60 * 3) then
           begin
             Obj.Stop(hPlay);
+            sleep(100);
             hPlay := Obj.Play('wife.mp3');
           end;
           sleep(500);
@@ -633,7 +639,7 @@ begin
           TTask.CurrentTask.CheckCanceled;
         end;
       end;
-
+      CodeSite.Send('cccccccccccccccc');
     end);
   task.Wait();
   FLock.Release;

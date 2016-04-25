@@ -20,10 +20,15 @@ type
   private
     FStopWatchs: array [TStopWatchEnum] of TStopwatch;
     FOldManPoint: TPoint; // 上一次人物坐标
-    FOldMiniMap, FOldMiniMapOpened: TMiniMap; // 上一次小地图位置
+    FOldMiniMap: TMiniMap; // 上一次小地图位置
     FOldLargeMap: TLargeMap; // 上一次大地图位置
+    FOldDoorState: Boolean;
+
   public
     constructor Create();
+    procedure ResetManStopWatch;
+    function CompareMiniMap(const aMiniMap: TMiniMap): Boolean; // 比较小地图是否相同
+    function CompareDoorState(aDoorState: Boolean): Boolean;
     // 杀怪成功后进行重置,或者捡物等
     function IsManMoveTimeOut(const aManPoint: TPoint): Boolean; // 是否移动超时
     function IsManFindTimeOut(const aManPoint: TPoint): Boolean; // 是否找人超时
@@ -41,6 +46,36 @@ implementation
 
 { TCheck }
 
+function TCheckTimeOut.CompareDoorState(aDoorState: Boolean): Boolean;
+begin
+  Result := FOldDoorState = aDoorState;
+  if not Result then
+  begin
+    FStopWatchs[swInMapPickGoodsOpened].Stop;
+    FStopWatchs[swInMapPickGoods].Stop;
+    FStopWatchs[swInMapLong].Stop;
+    FStopWatchs[swManMove].Stop;
+    FStopWatchs[swManFind].Stop;
+    FStopWatchs[swMonsterFind].Stop;
+    FOldDoorState := aDoorState;
+  end;
+end;
+
+function TCheckTimeOut.CompareMiniMap(const aMiniMap: TMiniMap): Boolean;
+begin
+  Result := FOldMiniMap = aMiniMap;
+  if not Result then
+  begin
+    FStopWatchs[swInMapPickGoodsOpened].Stop;
+    FStopWatchs[swInMapPickGoods].Stop;
+    FStopWatchs[swInMapLong].Stop;
+    FStopWatchs[swManMove].Stop;
+    FStopWatchs[swManFind].Stop;
+    FStopWatchs[swMonsterFind].Stop;
+    FOldMiniMap := aMiniMap;
+  end;
+end;
+
 constructor TCheckTimeOut.Create;
 var
   I: TStopWatchEnum;
@@ -48,7 +83,7 @@ begin
   inherited Create;
   for I := Low(FStopWatchs) to High(FStopWatchs) do
   begin
-    FStopWatchs[I] := TStopwatch.Create;
+    FStopWatchs[I] := TStopwatch.Create; // 初始化计时器
   end;
 end;
 
@@ -56,7 +91,7 @@ function TCheckTimeOut.IsInMapLongTimeOut(const aMiniMap: TMiniMap): Boolean;
 begin
   Result := False; // 设置默认值
   // 如果上一次和这一次地图相同
-  if FOldMiniMap = aMiniMap then
+  if CompareMiniMap(aMiniMap) then
   begin
     // 是否运行
     if FStopWatchs[swInMapLong].IsRunning then
@@ -74,7 +109,6 @@ begin
     FStopWatchs[swInMapLong].Stop;
     FStopWatchs[swInMapLong].Reset; // 恢复默认
   end;
-  FOldMiniMap := aMiniMap; // 记录当前地图
 
 end;
 
@@ -83,13 +117,13 @@ function TCheckTimeOut.IsInMapPickupGoodsTimeOut(
 begin
   Result := False; // 设置默认值
   // 如果上一次和这一次地图相同
-  if FOldMiniMap = aMiniMap then
+  if CompareMiniMap(aMiniMap) then
   begin
     // 是否运行
     if FStopWatchs[swInMapPickGoods].IsRunning then
     begin
       Result := FStopWatchs[swInMapPickGoods].ElapsedMilliseconds >=
-        1000 * 60 * 2
+        (1000 * 60 * 2);
     end
     else
     begin
@@ -101,7 +135,6 @@ begin
     FStopWatchs[swInMapPickGoods].Stop;
     FStopWatchs[swInMapPickGoods].Reset; // 恢复默认
   end;
-  FOldMiniMap := aMiniMap; // 记录当前地图
 end;
 
 function TCheckTimeOut.IsInMapPickupGoodsOpenedTimeOut(
@@ -109,7 +142,7 @@ function TCheckTimeOut.IsInMapPickupGoodsOpenedTimeOut(
 begin
   Result := False; // 设置默认值
   // 如果上一次和这一次地图相同
-  if FOldMiniMapOpened = aMiniMap then
+  if CompareMiniMap(aMiniMap) then
   begin
     // 是否运行
     if FStopWatchs[swInMapPickGoodsOpened].IsRunning then
@@ -125,9 +158,8 @@ begin
   else
   begin
     FStopWatchs[swInMapPickGoodsOpened].Stop;
-    FStopWatchs[swInMapPickGoodsOpened].Reset; // 恢复默认
+    // FStopWatchs[swInMapPickGoodsOpened].Reset; // 恢复默认
   end;
-  FOldMiniMapOpened := aMiniMap; // 记录当前地图
 end;
 
 function TCheckTimeOut.IsManFindTimeOut(const aManPoint: TPoint): Boolean;
@@ -152,7 +184,7 @@ begin
   begin
     // 找到人物停止计时
     FStopWatchs[swManFind].Stop;
-    FStopWatchs[swManFind].Reset;
+    // FStopWatchs[swManFind].Reset;
 
   end;
 end;
@@ -180,7 +212,7 @@ begin
     begin
       // 和上次坐标不相同,停止计时
       FStopWatchs[swManMove].Stop;
-      FStopWatchs[swManMove].Reset;
+      // FStopWatchs[swManMove].Reset;
 
     end;
     FOldManPoint := aManPoint; // 记录当前坐标
@@ -209,7 +241,7 @@ begin
   begin
     // 发现怪物
     FStopWatchs[swMonsterFind].Stop;
-    FStopWatchs[swMonsterFind].Reset;
+    // FStopWatchs[swMonsterFind].Reset;
   end;
 
 end;
@@ -224,11 +256,11 @@ begin
       // 虚弱的时候检测时间为10分钟
       if IsWeak then
         Result := FStopWatchs[swOutMapLong].ElapsedMilliseconds >=
-          1000 * 60 * 10
+          (1000 * 60 * 10)
       else
         // 正常检测为3分钟
         Result := FStopWatchs[swOutMapLong].ElapsedMilliseconds >=
-          1000 * 60 * 3;
+          (1000 * 60 * 3);
     end
     else
       FStopWatchs[swOutMapLong].Start;
@@ -236,9 +268,15 @@ begin
   else
   begin
     FStopWatchs[swOutMapLong].Stop; // 在图内的时候停止计时
-    FStopWatchs[swOutMapLong].Reset;
+    // FStopWatchs[swOutMapLong].Reset;
   end;
 
+end;
+
+procedure TCheckTimeOut.ResetManStopWatch;
+begin
+  FStopWatchs[swManMove].Stop;
+  FStopWatchs[swManFind].Stop;
 end;
 
 end.

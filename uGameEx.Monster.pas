@@ -129,7 +129,7 @@ end;
 function TMonster.FindMonsterByColor(aRect: TRect): TPoint;
 
 const
-  sNormalColor = '6b00f7-303030'; // 普通怪颜色
+  sNormalColor = '6b00f7-333333'; // 普通怪颜色
   // 坐标颜色点集合
   // sColors =
   // '6b00f7-303030,1|0|6b00f7-303030,2|0|6b00f7-303030,1|1|6b00f7-303030';
