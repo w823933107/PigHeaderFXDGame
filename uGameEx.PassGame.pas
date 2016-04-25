@@ -454,7 +454,9 @@ end;
 procedure TPassGame.SellZhuangbei;
 var
   ptMove: TPoint;
+  I: Integer;
 begin
+  I := 0;
   if FBox.OpenZhuangbei then
   begin
     if FBox.GetIsfuzhongByPic then
@@ -467,10 +469,13 @@ begin
 
         Obj.MoveTo(ptMove.x, ptMove.y);
         Sleep(300);
-
         if not FBox.IsHaveZhuangbei then
         begin
-          Break;
+          inc(I);
+          if I = 2 then // 两次空则真的没有装备了
+            Break
+          else
+            Continue;
         end;
         if FBox.GetZhuangbeiType = zt神器 then
         begin
