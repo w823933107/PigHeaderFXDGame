@@ -543,11 +543,21 @@ var
         begin
           if iRet = iMapLv then
           begin
-            FObj.KeyPressChar('space');
-            Sleep(500);
-            FObj.KeyPressChar('space');
-            Sleep(500);
-            Break;
+            while not Terminated do
+            begin
+              TTask.CurrentTask.CheckCanceled;
+              if FMap.MiniMap = mmMain1 then
+              begin
+                Exit;
+              end
+              else
+              begin
+                FObj.KeyPressChar('space');
+                Sleep(500);
+              end;
+
+            end;
+
           end
           else
             if iRet < iMapLv then
