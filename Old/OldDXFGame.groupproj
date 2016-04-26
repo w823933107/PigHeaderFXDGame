@@ -1,0 +1,60 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{3FC98F63-AB96-43AB-80CF-05E39AB78FEF}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="猪头鲁路修版.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="秀秀.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="suxin.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="猪头鲁路修版">
+        <MSBuild Projects="猪头鲁路修版.dproj"/>
+    </Target>
+    <Target Name="猪头鲁路修版:Clean">
+        <MSBuild Projects="猪头鲁路修版.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="猪头鲁路修版:Make">
+        <MSBuild Projects="猪头鲁路修版.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="秀秀">
+        <MSBuild Projects="秀秀.dproj"/>
+    </Target>
+    <Target Name="秀秀:Clean">
+        <MSBuild Projects="秀秀.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="秀秀:Make">
+        <MSBuild Projects="秀秀.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="suxin">
+        <MSBuild Projects="suxin.dproj"/>
+    </Target>
+    <Target Name="suxin:Clean">
+        <MSBuild Projects="suxin.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="suxin:Make">
+        <MSBuild Projects="suxin.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="猪头鲁路修版;秀秀;suxin"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="猪头鲁路修版:Clean;秀秀:Clean;suxin:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="猪头鲁路修版:Make;秀秀:Make;suxin:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>

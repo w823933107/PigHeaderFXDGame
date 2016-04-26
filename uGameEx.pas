@@ -344,7 +344,6 @@ procedure TGame.DoorOpenedHandle(aMiniMap: TMiniMap; aManPoint: TPoint);
 var
   ptDoor, ptGoods: TPoint;
 begin
-
   // 10s捡物
   if not FCheckTimeOut.IsInMapPickupGoodsOpenedTimeOut(aMiniMap) then
   begin
@@ -355,6 +354,7 @@ begin
       // 有物品走向物品,不继续执行进门
       FMove.MoveToGoods(aManPoint, ptGoods, aMiniMap);
       LongTimeNoMoveHandle(aManPoint);
+      FCheckTimeOut.ResetManStopWatch;
       Exit;
     end;
   end;
@@ -374,6 +374,7 @@ begin
       FMove.MoveToDoor(aManPoint, ptDoor, aMiniMap); // 进门
     end;
     LongTimeNoMoveHandle(aManPoint);
+    FCheckTimeOut.ResetManStopWatch;
   end;
 
 end;
@@ -657,6 +658,7 @@ procedure TGame.InMapHandle;
     begin
       FMove.StopMove;
       FMove.RandomMove; // 随机移动
+      FCheckTimeOut.ResetManStopWatch;
     end
     else
       Result := True;

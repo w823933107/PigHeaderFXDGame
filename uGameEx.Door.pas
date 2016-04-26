@@ -48,14 +48,17 @@ var
   x, y: OleVariant;
 begin
   Result := False;
-  // 多点查找门开启的颜色值
-  if Obj.FindMultiColor(0, 0, 800, 600, sColorDoorOpen, sColor, 1.0, 0, x,
-    y) = 1 then
-    Exit(True);
-  // 查找问号,找到了说明门开了
-  if Obj.FindPic(719, 23, 798, 144, '问号.bmp', clPicOffsetZero, 0.9, 0, x, y)
-    <> -1 then
-    Exit(True);
+  if Obj.FindColorBlock(0, 0, 800, 600, sColorDoorOpen, 1.0, 40, 8, 5, x, y) = 1
+  then
+    // 多点查找门开启的颜色值
+    // if Obj.FindMultiColor(0, 0, 800, 600, sColorDoorOpen, sColor, 1.0, 0, x,
+    // y) = 1 then
+    Result := True
+  else
+    // 查找问号,找到了说明门开了
+    if Obj.FindPic(719, 23, 798, 144, '问号.bmp', clPicOffsetZero, 0.9, 0, x, y)
+      <> -1 then
+      Result := True;
 end;
 
 function TDoor.GetKeyCode: Integer;
