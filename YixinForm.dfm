@@ -1,8 +1,10 @@
 object Form3: TForm3
   Left = 0
   Top = 0
-  ClientHeight = 164
-  ClientWidth = 153
+  BorderIcons = [biSystemMenu, biMinimize]
+  BorderStyle = bsSingle
+  ClientHeight = 158
+  ClientWidth = 154
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -11,7 +13,6 @@ object Form3: TForm3
   Font.Style = []
   OldCreateOrder = False
   OnCreate = FormCreate
-  OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
   object btn1: TButton
@@ -43,8 +44,8 @@ object Form3: TForm3
   end
   object stat1: TStatusBar
     Left = 0
-    Top = 145
-    Width = 153
+    Top = 139
+    Width = 154
     Height = 19
     Panels = <
       item
@@ -54,5 +55,16 @@ object Form3: TForm3
       item
         Width = 50
       end>
+    ExplicitTop = 114
+    ExplicitWidth = 150
+  end
+  object btnGuard: TButton
+    Left = 40
+    Top = 101
+    Width = 75
+    Height = 25
+    Caption = #23567#29482
+    TabOrder = 4
+    OnClick = btnGuardClick
   end
 end

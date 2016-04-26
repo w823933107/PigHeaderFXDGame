@@ -28,13 +28,14 @@ uses
   uGameEx.Skill in 'uGameEx.Skill.pas',
   uObj in 'uObj.pas',
   uGameEx.RegisterClass in 'uGameEx.RegisterClass.pas',
-  SuxinForm in 'SuxinForm.pas' {ConfigForm},
+  SuxinForm in 'SuxinForm.pas' {ConfigForm} ,
   uGameEx.PassGame in 'uGameEx.PassGame.pas',
   uGameEx.CheckTimeOut in 'uGameEx.CheckTimeOut.pas';
 
 {$R *.res}
 
+
 begin
-  ReportMemoryLeaksOnShutdown := Boolean(DebugHook);
+   ReportMemoryLeaksOnShutdown := Boolean(DebugHook);
 
 end.

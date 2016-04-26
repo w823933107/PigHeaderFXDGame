@@ -420,6 +420,7 @@ begin
       on E: EGame do
       begin
         Application.MessageBox(PWideChar(E.Message), '警告');
+        raise;
         CodeSite.Send('error operator');
       end;
     end;
@@ -678,6 +679,7 @@ var
   ptMan: TPoint;
   bDoorState: Boolean;
 begin
+
   aMiniMap := FMap.MiniMap; // 获取小地图
   case aMiniMap of
     mmUnknown:
@@ -754,19 +756,27 @@ begin
   FCheckTask := TTask.Run(CheckTask); // 运行检测任务
   while (not Terminated) do
   begin
-    TTask.CurrentTask.CheckCanceled; // 检测
-    aLargeMap := FMap.LargeMap; // 获取大地图
-    if FCheckTimeOut.IsOutMapTimeOut(aLargeMap) then // 检测是否在图外超时
-      warnning;
-    case aLargeMap of
-      lmUnknown:
-        UnknownMapHandle; // 未知图操作
-      lmOut:
-        OutMapHandle; // 图内操作
-      lmIn:
-        InMapHandle; // 图内操作
+    try
+      TTask.CurrentTask.CheckCanceled; // 检测
+      aLargeMap := FMap.LargeMap; // 获取大地图
+      if FCheckTimeOut.IsOutMapTimeOut(aLargeMap) then // 检测是否在图外超时
+        warnning;
+      case aLargeMap of
+        lmUnknown:
+          UnknownMapHandle; // 未知图操作
+        lmOut:
+          OutMapHandle; // 图内操作
+        lmIn:
+          InMapHandle; // 图内操作
+      end;
+      Sleep(GameData.GameConfig.iLoopDelay); // 循环延时
+    except
+      on E: EInvalidOp do // 屏蔽这个错误
+      begin
+
+      end;
     end;
-    Sleep(GameData.GameConfig.iLoopDelay); // 循环延时
+
   end;
 end;
 
@@ -822,8 +832,11 @@ begin
   if Assigned(FMainTask) then
   begin
     FGameData.Terminated := True;
-    if FMainTask.Status = TTaskStatus.Running then
-      FMainTask.Cancel;
+    FMainTask.Cancel;
+  end;
+  if Assigned(FCheckTask) then
+  begin
+    FCheckTask.Cancel;
   end;
 end;
 
