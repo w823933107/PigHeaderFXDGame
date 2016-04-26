@@ -54,21 +54,13 @@ object ConfigForm: TConfigForm
           Height = 13
           Caption = 'LoopDelay'
         end
-        object chkAutoRunGuard: TCheckBox
-          Left = 3
-          Top = 23
-          Width = 96
-          Height = 17
-          Caption = 'AutoGuard'
-          TabOrder = 0
-        end
         object edtLoopDelay: TEdit
           Left = 57
           Top = 46
           Width = 42
           Height = 21
           NumbersOnly = True
-          TabOrder = 1
+          TabOrder = 0
           Text = '20'
         end
         object udLoopDelay: TUpDown
@@ -78,7 +70,7 @@ object ConfigForm: TConfigForm
           Height = 21
           Associate = edtLoopDelay
           Position = 20
-          TabOrder = 2
+          TabOrder = 1
         end
         object chkVip: TCheckBox
           Left = 125
@@ -86,7 +78,7 @@ object ConfigForm: TConfigForm
           Width = 44
           Height = 17
           Caption = 'VIP'
-          TabOrder = 3
+          TabOrder = 2
         end
         object btnResetDefaultConfig: TButton
           Left = 69
@@ -94,7 +86,7 @@ object ConfigForm: TConfigForm
           Width = 75
           Height = 25
           Caption = 'ResetDefault'
-          TabOrder = 4
+          TabOrder = 3
           OnClick = btnResetDefaultConfigClick
         end
         object btnSaveConfig: TButton
@@ -103,18 +95,18 @@ object ConfigForm: TConfigForm
           Width = 60
           Height = 25
           Caption = 'SaveConfig'
-          TabOrder = 5
+          TabOrder = 4
           OnClick = btnSaveConfigClick
         end
         object chkLogView: TCheckBox
-          Left = 97
+          Left = 3
           Top = 23
           Width = 97
           Height = 17
           Caption = 'LogView'
           Checked = True
           State = cbChecked
-          TabOrder = 6
+          TabOrder = 5
           OnClick = chkLogViewClick
         end
       end

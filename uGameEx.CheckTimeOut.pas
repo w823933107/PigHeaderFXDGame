@@ -284,7 +284,7 @@ begin
   else
   begin
     FStopWatchs[swOutMapLong].Stop; // 在图内的时候停止计时
-    // FStopWatchs[swOutMapLong].Reset;
+    FStopWatchs[swOutMapLong].Reset;
   end;
 
 end;

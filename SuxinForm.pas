@@ -17,7 +17,6 @@ type
     rgWndState: TRadioGroup;
     grpBaseSetting: TGroupBox;
     lbl2: TLabel;
-    chkAutoRunGuard: TCheckBox;
     edtLoopDelay: TEdit;
     udLoopDelay: TUpDown;
     chkVip: TCheckBox;
@@ -128,7 +127,6 @@ begin
   begin
 
     rgWndState.ItemIndex := iWndState;
-    chkAutoRunGuard.Checked := bAutoRunGuard;
     edtLoopDelay.Text := iLoopDelay.ToString();
     chkVip.Checked := bVIP;
     edtPickUpGoodsTimeOut.Text := iPickUpGoodsTimeOut.ToString();
@@ -157,7 +155,6 @@ var
 begin
   aGameConfig := TGameConfig.Create;
   aGameConfig.iWndState := rgWndState.ItemIndex;
-  aGameConfig.bAutoRunGuard := chkAutoRunGuard.Checked;
   aGameConfig.iLoopDelay := string(edtLoopDelay.Text).ToInteger;
   aGameConfig.bVIP := chkVip.Checked;
   aGameConfig.iPickUpGoodsTimeOut := string(edtPickUpGoodsTimeOut.Text)

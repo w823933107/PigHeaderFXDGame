@@ -62,7 +62,6 @@ type
   // 游戏配置
   TGameConfig = record
     iWndState: Integer; // 窗口状态
-    bAutoRunGuard: Boolean; // 自动启动保护
     iLoopDelay: Integer; // 循环延时,降低CPU占用率
     bVIP: Boolean; // 黑钻
     iPickUpGoodsTimeOut: Integer; // 捡物超时
@@ -412,7 +411,6 @@ implementation
 class function TGameConfig.Create: TGameConfig;
 begin
   Result.iWndState := 0;
-  Result.bAutoRunGuard := True;
   Result.iLoopDelay := 20;
   Result.bVIP := True;
   Result.slBengshanji := 's';

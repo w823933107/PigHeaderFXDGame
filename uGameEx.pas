@@ -236,6 +236,7 @@ begin
   // 创建并初始化对象
   New(FGameData);
   FObj := TObjFactory.CreateChargeObj;
+  FObj.SetShowErrorMsg(0); // 关闭弹出
   FGameData.Terminated := False;
   FGameData.Obj := FObj;
   GameData := FGameData;
@@ -598,29 +599,29 @@ var
 begin
   Result := False;
   sPath := GetCurrentDir;
-  if FGameConfigManager.Config.bAutoRunGuard then
+  // if FGameConfigManager.Config.bAutoRunGuard then
+  // begin
+  iRet := Obj.SetSimMode(2);
+  if iRet <> 1 then
   begin
-    iRet := Obj.SetSimMode(2);
-    if iRet <> 1 then
-    begin
-      Application.MessageBox(PChar('硬件驱动加载失败,错误码:' + iRet.ToString), '错误');
-      Application.Terminate;
-    end;
-    iRet := Obj.DmGuard(1, 'f1');
-    if iRet <> 1 then
-    begin
-      Application.MessageBox(PChar('f1盾开启失败,错误码:' + iRet.ToString), '错误');
-      Application.Terminate;
-    end;
-    ChDir(sPath);
-    iRet := Obj.DmGuard(1, 'block');
-    if iRet <> 1 then
-    begin
-      Application.MessageBox(PChar('block驱动加载失败,错误码:' + iRet.ToString), '错误');
-      Application.Terminate;
-    end;
-    Result := True;
+    Application.MessageBox(PChar('硬件驱动加载失败,错误码:' + iRet.ToString), '错误');
+    Application.Terminate;
   end;
+  iRet := Obj.DmGuard(1, 'f1');
+  if iRet <> 1 then
+  begin
+    Application.MessageBox(PChar('f1盾开启失败,错误码:' + iRet.ToString), '错误');
+    Application.Terminate;
+  end;
+  ChDir(sPath);
+  iRet := Obj.DmGuard(1, 'block');
+  if iRet <> 1 then
+  begin
+    Application.MessageBox(PChar('block驱动加载失败,错误码:' + iRet.ToString), '错误');
+    Application.Terminate;
+  end;
+  Result := True;
+  // end;
 end;
 
 procedure TGame.InMapHandle;
@@ -630,7 +631,7 @@ procedure TGame.InMapHandle;
     iRet: Integer;
     x, y: OleVariant;
   begin
-    iRet := FObj.CmpColor(37, 558, 'bb1111-333333', 0.9);
+    iRet := FObj.CmpColor(37, 558, 'bb1111-444444', 1.0);
     if iRet = 1 then
     begin
       iRet := FObj.FindPic(80, 553, 270, 592, '达人HP药剂.bmp', clPicOffsetZero,
@@ -749,6 +750,8 @@ var
 begin
   CloseGameWindows; // 关闭所有窗口
   FGameData.RoleInfo := FRoleInfoHandle.GetRoleInfo; // 获取角色信息,获取失败抛出异常
+  if FGameData.RoleInfo.Lv <= 50 then
+    raise EGame.Create('Lv too low');
   if FGameData.GameConfig.bVIP then // 依据类型设置字的颜色
     FGameData.ManStrColor := clVip
   else
@@ -786,11 +789,36 @@ var
 begin
   CloseGameWindows; // 关闭所有窗口
   FMove.StopMove;
+
   // 虚弱进行等待
   if IsWeak then
   begin
-    // warnning;
-    Sleep(1000);
+    while IsWeak do
+    begin
+      Sleep(1000);
+    end;
+    CloseGameWindows; // 关闭窗口
+    // 不虚弱检测疲劳
+    if not IsHavePilao then
+    begin
+      // 开始换角色作业,并等待完成
+      ChangeRoleTask := TTask.Run(ChangeRole);
+      if not ChangeRoleTask.Wait(1000 * 60 * 2) then
+      begin
+        ChangeRoleTask.Cancel;
+        warnning;
+      end;
+    end
+    else
+    begin
+      // 开始进图作业,并等待完成
+      GotoInMapTask := TTask.Run(GoToInMap);
+      if not GotoInMapTask.Wait(1000 * 60 * 2) then
+      begin
+        GotoInMapTask.Cancel;
+        warnning;
+      end;
+    end;
   end
   else
   begin
