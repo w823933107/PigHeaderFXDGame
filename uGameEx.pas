@@ -819,6 +819,7 @@ begin
         warnning;
       end;
     end;
+    FCheckTimeOut.ResetOutMapStopWatch; // 重置图外计时器
   end
   else
   begin

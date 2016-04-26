@@ -369,6 +369,7 @@ type
     function CompareDoorState(aDoorState: Boolean): Boolean; // 检测门的状态,内部用来重置计时器
     function CompareMiniMap(const aMiniMap: TMiniMap): Boolean; // 比较小地图是否相同
     procedure ResetManStopWatch;
+    procedure ResetOutMapStopWatch;
   end;
 
   TZhuangbeiType = (zt未知, zt普通, zt高级, zt稀有, zt神器, zt传承, zt勇者, zt传说, zt史诗);
@@ -601,18 +602,18 @@ begin
     procedure
     var
       hPlay: THandle;
-      sw: TStopWatch;
+      sw, swLong: TStopWatch;
+
     begin
       if GameData.GameConfig.bWarning then
       begin
-        CodeSite.Send('bbbbbbbbbbbbbbbbb');
         hPlay := Obj.Play('wife.mp3');
         sw := TStopWatch.StartNew; // 计时
+        swLong := TStopWatch.StartNew;
         while (not Terminated) do
         begin
-          CodeSite.Send('aaaaaaaaaaaaaa');
           TTask.CurrentTask.CheckCanceled;
-          if sw.ElapsedMilliseconds >= (1000 * 60 * 10) then
+          if swLong.ElapsedMilliseconds >= (1000 * 60 * 10) then
           begin
             Obj.Stop(hPlay); // 超出10分钟停止报警
             sleep(100);
@@ -623,6 +624,7 @@ begin
             Obj.Stop(hPlay);
             sleep(100);
             hPlay := Obj.Play('wife.mp3');
+            sw.Reset; // 重置
           end;
           sleep(500);
         end;
@@ -637,7 +639,6 @@ begin
           TTask.CurrentTask.CheckCanceled;
         end;
       end;
-      CodeSite.Send('cccccccccccccccc');
     end);
   task.Wait();
   FLock.Release;

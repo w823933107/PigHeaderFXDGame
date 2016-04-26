@@ -27,6 +27,7 @@ type
   public
     constructor Create();
     procedure ResetManStopWatch;
+    procedure ResetOutMapStopWatch;
     function CompareMiniMap(const aMiniMap: TMiniMap): Boolean; // 比较小地图是否相同
     function CompareDoorState(aDoorState: Boolean): Boolean;
     // 杀怪成功后进行重置,或者捡物等
@@ -293,6 +294,14 @@ procedure TCheckTimeOut.ResetManStopWatch;
 begin
   FStopWatchs[swManMove].Stop;
   FStopWatchs[swManFind].Stop;
+  FStopWatchs[swManMove].Reset;
+  FStopWatchs[swManFind].Reset;
+end;
+
+procedure TCheckTimeOut.ResetOutMapStopWatch;
+begin
+  FStopWatchs[swOutMapLong].Stop;
+  FStopWatchs[swOutMapLong].Reset;
 end;
 
 end.
