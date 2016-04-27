@@ -55,8 +55,6 @@ object Form3: TForm3
       item
         Width = 50
       end>
-    ExplicitTop = 114
-    ExplicitWidth = 150
   end
   object btnGuard: TButton
     Left = 40

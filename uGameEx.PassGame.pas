@@ -96,7 +96,7 @@ var
   iRet: Integer;
   x, y: OleVariant;
 begin
-  iRet := Obj.FindPic(424, 419, 723, 535, '负重条.bmp', clPicOffsetZero,
+  iRet := Obj.FindPic(424, 419, 723, 535, '负重条.bmp|负重条1.bmp', clPicOffsetZero,
     0.9, 0, x, y);
   Result := iRet > -1;
 
@@ -401,7 +401,6 @@ begin
         else
         begin
           ContinueNext;
-          OutputDebugString('----------------跳出啊----------------------');
           Exit;
         end;
 
@@ -412,9 +411,6 @@ begin
     task.Cancel;
     Warnning;
   end;
-
-  OutputDebugString('------------------完成任务了------');
-
 end;
 
 procedure TPassGame.FenZhuangHandle;

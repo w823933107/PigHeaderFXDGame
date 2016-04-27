@@ -2014,7 +2014,7 @@ var
   r1, r2, r3, r4, r5, r6: TRect;
   iRet: Integer;
 begin
-  // 第二个希字
+  // 希字
   iRet := Obj.FindPic(82, 128, 629, 266, '希.bmp', clPicOffsetZero, 1.0,
     0, x, y);
   if iRet > -1 then
@@ -2022,7 +2022,7 @@ begin
     // 上边左边
     r1 := TRect.Create(x + 93, y + 188, x + 142, y + 249);
     // 上边右边
-    r2 := TRect.Create(x + 277, y + 185, x + 353, y + 244);
+    r2 := TRect.Create(x + 238, y + 174, x + 350, y + 240);
     // 上边下边
     r3 := TRect.Create(x + 134, y + 244, x + 306, y + 265);
     // 下边左边

@@ -118,8 +118,8 @@ var
   x, y: OleVariant;
   iRet: Integer;
 const
-  sFirstColor = '0000ff-000000';
-  sColor = '0000ff,1|0|ff0000,2|0|0000ff,0|1|ff0000,1|1|ff0000,0|2|0000ff,3|3|ff0000';
+  sFirstColor = '0000ff-000100';
+  sColor = '0000ff-000100,1|0|ff0000-000100,2|0|0000ff-000100,0|1|ff0000-000100,1|1|ff0000-000100,0|2|0000ff-000100,3|3|ff0000-000100';
 begin
   Result := TPoint.Zero;
   with aSearch do

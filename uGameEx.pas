@@ -9,7 +9,8 @@ interface
 
 uses uGameEx.Interf, System.SysUtils, uObj, Winapi.Windows,
   Spring.Container, CodeSiteLogging, Vcl.Forms, uGameEx.RegisterClass, QPlugins,
-  System.Types, System.Threading, Winapi.ActiveX, System.Classes;
+  System.Types, System.Threading, Winapi.ActiveX, System.Classes,
+  System.Diagnostics;
 
 type
 
@@ -33,7 +34,7 @@ type
     FGoods: IGoods;
     FCheckTimeOut: ICheckTimeOut;
     FSkill: ISkill;
-  private
+  strict private
     procedure GameTask; // 主逻辑作业
     procedure CheckTask; // 检测作业
     procedure LoopHandle; // 循环处理
@@ -44,10 +45,22 @@ type
     procedure FreeGameObjs;
     procedure DoorClosedHandle(aMiniMap: TMiniMap; aManPoint: TPoint);
     procedure DoorOpenedHandle(aMiniMap: TMiniMap; aManPoint: TPoint);
-  private
-    procedure GoToInMap;
-    procedure ChangeRole;
+  strict private
     procedure LongTimeNoMoveHandle(const aManPoint: TPoint);
+
+  private
+    function GetManPoint: TPoint;
+  private
+    // 图外的相关任务
+    procedure DoOutMapTask;
+    procedure DoGoToInMapTask;
+    procedure DoChangeRoleTask;
+    procedure DoWeakTask;
+    // 图内相关任务
+    procedure DoInNormalMapTask;
+    procedure DoDoorOpenedTask;
+    procedure DoDoorClosedTask;
+    procedure HpHandle;
   public
     constructor Create();
     destructor Destroy; override;
@@ -74,7 +87,7 @@ implementation
 
 { TGame }
 
-procedure TGame.ChangeRole;
+procedure TGame.DoChangeRoleTask;
 var
   x, y: OleVariant;
   iRet: Integer;
@@ -181,29 +194,231 @@ var
       Sleep(100);
     end;
   end;
-  function UpdataGameInfo: TRoleInfo;
-  begin
-    Result := FRoleInfoHandle.GetRoleInfo;
-  end;
 
 begin
   CloseGameWindows;
   SelectMemu;
   GotoSelectRole;
   GotoInGame;
-  GameData.RoleInfo := UpdataGameInfo; // 重新设置人物信息
-  if (GameData.RoleInfo.MainJob <> mjKuangzhanshi) and
-    (GameData.RoleInfo.MainJob <> mjYuxuemoshen) and
-    (GameData.RoleInfo.MainJob <> mjSilingshushi) and
-    (GameData.RoleInfo.MainJob <> mjLinghunshougezhe)
+  FGameData.RoleInfo := FRoleInfoHandle.GetRoleInfo; // 重新设置人物信息
+  if (FGameData.RoleInfo.MainJob <> mjKuangzhanshi) and
+    (FGameData.RoleInfo.MainJob <> mjYuxuemoshen) and
+    (FGameData.RoleInfo.MainJob <> mjSilingshushi) and
+    (FGameData.RoleInfo.MainJob <> mjLinghunshougezhe)
   then
     warnning;
   // 等级检测
-  if GameData.RoleInfo.Lv <= 50 then
+  if FGameData.RoleInfo.Lv <= 50 then
     warnning;
   // 等级较大的重新设置地图等级
-  if GameData.RoleInfo.Lv >= 80 then
-    GameData.GameConfig.iMapLv := 3;
+  if FGameData.RoleInfo.Lv >= 80 then
+    FGameData.GameConfig.iMapLv := 3;
+end;
+
+procedure TGame.DoDoorClosedTask;
+var
+  ptMan, ptMonster, ptOldMonster, ptOldMan: TPoint;
+  swMan, swMonster: TStopwatch;
+  OldMiniMap, NewMiniMap: TMiniMap;
+begin
+  ptOldMan := TPoint.Zero;
+  swMan := TStopwatch.Create;
+  swMonster := TStopwatch.Create;
+  OldMiniMap := FMap.MiniMap;
+  while not Terminated do
+  begin
+    TTask.CurrentTask.CheckCanceled;
+    NewMiniMap := FMap.MiniMap;
+    if NewMiniMap in [mmUnknown, mmPassGame, mmClickCards] then
+      Break;
+    if OldMiniMap <> NewMiniMap then
+      Break;
+    if FDoor.IsOpen then
+      Break;
+    CloseGameWindows;
+    HpHandle;
+    if IsWeakInMap then // 图内虚弱报警
+      warnning;
+    if FSkill.ReleaseHelperSkill then // 释放辅助技能
+    begin
+      swMan.Stop; // 释放技能也要停止计时
+      swMan.Reset;
+    end;
+    if FGoods.IsArrivedGoods then // 到达物品捡物
+    begin
+      FGoods.PickupGoods;
+      swMan.Stop; // 捡物停止计时
+      swMan.Reset;
+    end;
+
+    ptMan := GetManPoint;
+    if not ptMan.IsZero then
+    begin
+      // 如果和上一次相同,进行时间比较
+      // ----------------------
+      if ptOldMan = ptMan then
+      begin
+        if swMan.IsRunning then
+        begin
+          if swMan.ElapsedMilliseconds > 1000 * 5 then // 3秒位置没变进行随机移动
+          begin
+            FMove.StopMove;
+            FMove.RandomMove;
+            ptOldMan := TPoint.Zero;
+            Sleep(20);
+            Continue;
+          end;
+        end
+        else
+        begin
+          swMan.Start;
+        end;
+      end
+      else
+      begin
+        swMan.Stop;
+        swMan.Reset;
+      end;
+      ptOldMan := ptMan; // 记录坐标
+      // ---------------------------------
+      FMonster.ManPoint := ptMan;
+      if FMonster.IsArriviedMonster(ptMonster) then
+      begin
+        // 调整方向
+
+        FMove.StopMove;
+        if ptMonster.x < ptMan.x - 20 then
+        begin
+          FObj.KeyPressChar('left');
+          Sleep(80);
+        end
+        else
+          if ptMonster.x > ptMan.x + 20 then
+        begin
+          FObj.KeyPressChar('right');
+          Sleep(80);
+        end;
+        FSkill.ReleaseSkill;
+        swMan.Stop; // 到达怪物停止人物计时
+        swMan.Reset;
+        swMonster.Stop;
+        swMonster.Reset;
+      end
+      else
+      begin
+        ptMonster := FMonster.Point;
+        if ptMonster.IsZero then
+        begin
+          if swMonster.IsRunning then
+          begin
+            if swMonster.ElapsedMilliseconds >= 1000 * 4 then // 超时没找到挂我寻怪
+            begin
+              FMove.MoveToFindMonster(ptMan, OldMiniMap); // 寻怪
+            end;
+          end
+          else
+          begin
+            swMonster.Start;
+          end;
+
+        end
+        else
+        begin
+          swMonster.Stop;
+          swMonster.Reset;
+          FMove.MoveToMonster(ptMan, ptMonster, OldMiniMap);
+        end;
+      end;
+    end;
+    Sleep(20);
+  end;
+end;
+
+procedure TGame.DoDoorOpenedTask;
+var
+  OldMiniMap, NewMiniMap: TMiniMap;
+  ptMan, ptGoods, ptDoor, ptOldMan: TPoint;
+  swPickupGoods, swMan: TStopwatch;
+  bIsExistGoods, bIsOutTime: Boolean;
+begin
+  OldMiniMap := FMap.MiniMap; // 记录下当前的地图
+  swPickupGoods := TStopwatch.StartNew;
+  swMan := TStopwatch.Create;
+  ptOldMan := TPoint.Zero;
+  while not Terminated do
+  begin
+    TTask.CurrentTask.CheckCanceled;
+    NewMiniMap := FMap.MiniMap;
+    if NewMiniMap in [mmUnknown, mmPassGame, mmClickCards] then
+      Break;
+    if OldMiniMap <> NewMiniMap then // 检测地图是否变化
+      Break;
+    if FDoor.IsClose then // 门已经关闭了跳出
+      Break;
+    CloseGameWindows;
+    HpHandle;
+    if IsWeakInMap then
+      warnning;
+    if FGoods.IsArrivedGoods then // 到达物品捡物
+      FGoods.PickupGoods;
+    ptMan := GetManPoint;
+    if not ptMan.IsZero then
+    begin
+      // 如果和上一次相同,进行时间比较
+      // ----------------------------
+      if ptOldMan = ptMan then
+      begin
+        if swMan.IsRunning then
+        begin
+          if swMan.ElapsedMilliseconds > 1000 * 5 then // 3秒位置没变进行随机移动
+          begin
+            FMove.StopMove;
+            FMove.RandomMove;
+            ptOldMan := TPoint.Zero;
+            Continue;
+          end;
+        end
+        else
+        begin
+          swMan.Start;
+        end;
+      end
+      else
+      begin
+        swMan.Stop;
+        swMan.Reset;
+      end;
+      ptOldMan := ptMan; // 记录坐标
+      // -------------------
+      bIsExistGoods := FGoods.IsExistGoods;
+      if bIsExistGoods then // 物品存在进行捡物
+      begin
+        bIsOutTime := swPickupGoods.ElapsedMilliseconds > 1000 * 10;
+        if not bIsOutTime then // 检测物品捡物时间
+        begin
+          FGoods.ManPoint := ptMan; // 设置人物坐标用来获取最近坐标
+          ptGoods := FGoods.Point;
+          FMove.MoveToGoods(ptMan, ptGoods, OldMiniMap);
+        end;
+      end;
+      if (not bIsExistGoods) or (bIsOutTime) then
+      begin
+        FDoor.ManPoint := ptMan;
+        FDoor.MiniMap := OldMiniMap;
+        if FDoor.IsArrviedDoor then // 到达门进门
+        begin
+          FMove.StopMove;
+          FMove.MoveInDoor(FDoor.KeyCode);
+        end
+        else
+        begin
+          ptDoor := FDoor.Point;
+          FMove.MoveToDoor(ptMan, ptDoor, OldMiniMap);
+        end;
+      end;
+    end;
+    Sleep(20);
+  end;
 end;
 
 procedure TGame.CheckTask;
@@ -291,7 +506,9 @@ begin
   inherited;
 end;
 
-procedure TGame.DoorClosedHandle(aMiniMap: TMiniMap; aManPoint: TPoint);
+procedure TGame.DoorClosedHandle(aMiniMap: TMiniMap;
+  aManPoint:
+  TPoint);
 var
   ptMonster, ptMonsterArrived: TPoint;
 begin
@@ -340,7 +557,9 @@ begin
 
 end;
 
-procedure TGame.DoorOpenedHandle(aMiniMap: TMiniMap; aManPoint: TPoint);
+procedure TGame.DoorOpenedHandle(aMiniMap: TMiniMap;
+  aManPoint:
+  TPoint);
 var
   ptDoor, ptGoods: TPoint;
 begin
@@ -379,6 +598,75 @@ begin
 
 end;
 
+procedure TGame.DoOutMapTask;
+var
+  ChangeRoleTask, GotoInMapTask, weakTask: ITask;
+begin
+  FMove.StopMove; // 停止移动
+  FObj.KeyPressChar('esc'); // 防止有其他窗口,比如任务窗口
+  Sleep(200);
+  CloseGameWindows; // 再次关闭所有窗口
+  FMove.StopMove; // 停止移动
+  while not Terminated do
+  begin
+    TTask.CurrentTask.CheckCanceled;
+    if FMap.LargeMap <> lmOut then // 不在图外跳出
+      Break;
+    CloseGameWindows; // 关闭所有窗口
+    // 虚弱进行等待
+    if IsWeak then
+    begin
+      // 虚弱作业
+      weakTask := TTask.Run(DoWeakTask);
+      if not weakTask.Wait(1000 * 60 * 8) then // 等待作业完成
+      begin
+        weakTask.Cancel;
+        warnning;
+      end;
+    end
+    else
+    begin
+      // 不虚弱检测疲劳
+      if not IsHavePilao then
+      begin
+        // 开始换角色作业,并等待完成
+        ChangeRoleTask := TTask.Run(DoChangeRoleTask);
+        if not ChangeRoleTask.Wait(1000 * 60 * 2) then
+        begin
+          ChangeRoleTask.Cancel;
+          warnning;
+        end;
+      end
+      else
+      begin
+        // 开始进图作业,并等待完成
+        GotoInMapTask := TTask.Run(DoGoToInMapTask);
+        if not GotoInMapTask.Wait(1000 * 60 * 2) then
+        begin
+          GotoInMapTask.Cancel;
+          warnning;
+        end;
+      end;
+    end;
+    Sleep(100);
+  end;
+
+end;
+
+procedure TGame.DoWeakTask;
+begin
+  while not Terminated do
+  begin
+    TTask.CurrentTask.CheckCanceled;
+    CloseGameWindows;
+    if FMap.LargeMap <> lmOut then // 不在图外跳出
+      Break;
+    if not IsWeak then
+      Break;
+    Sleep(1000);
+  end;
+end;
+
 procedure TGame.FreeGameObjs;
 begin
   FRoleInfoHandle := nil;
@@ -414,8 +702,8 @@ begin
       CodeSite.Send('start to run');
       CoInitializeEx(nil, 0); // 初始化Com库
       FGameData^.GameConfig := FGameConfigManager.Config; // 读取配置文件
-      FGameData^.Hwnd := BindGame; // 保存游戏窗口句柄
       FGameData.Terminated := False;
+      FGameData^.Hwnd := BindGame; // 保存游戏窗口句柄
       CreateGameObjs(FGameData); // 创建需要使用的对象
       LoopHandle; // 循环处理
     except
@@ -424,19 +712,48 @@ begin
         Application.MessageBox(PWideChar(E.Message), '警告');
         raise;
         CodeSite.Send('error operator');
-      end;
+      end
+      else
+        raise;
     end;
   finally
     CodeSite.Send('start to clear ');
     FreeGameObjs;
     FMainTask := nil;
     CoUninitialize;
-
     // 清除所有作业 ,调用后似乎不能正确执行
   end;
 end;
 
-procedure TGame.GoToInMap;
+function TGame.GetManPoint: TPoint;
+var
+  task: ITask;
+  ptMan: PPoint;
+begin
+  Result := TPoint.Zero;
+  ptMan := @Result;
+  task := TTask.Run(
+    procedure
+    begin
+      while not Terminated do
+      begin
+        TTask.CurrentTask.CheckCanceled;
+        ptMan^ := FMan.Point;
+        if not ptMan^.IsZero then
+          Break;
+        Sleep(100);
+      end;
+
+    end);
+  if not task.Wait(1000 * 4) then // 等待4秒还是未获得进行随机移动
+  begin
+    task.Cancel;
+    FSkill.DestroyBarrier;
+    FMove.RandomMove;
+  end;
+end;
+
+procedure TGame.DoGoToInMapTask;
 var
   iRet: Integer;
   x, y: OleVariant;
@@ -593,6 +910,37 @@ begin
 
 end;
 
+procedure TGame.DoInNormalMapTask;
+var
+  OpenedTask, ClosedTask: ITask;
+begin
+  while not Terminated do
+  begin
+    TTask.CurrentTask.CheckCanceled;
+    if FMap.MiniMap in [mmPassGame, mmClickCards, mmUnknown] then
+      Break;
+    if FDoor.IsOpen then
+    begin
+      OpenedTask := TTask.Run(DoDoorOpenedTask);
+      if not OpenedTask.Wait(1000 * 60 * 2) then
+      begin
+        OpenedTask.Cancel;
+        warnning;
+      end;
+    end
+    else
+    begin
+      ClosedTask := TTask.Run(DoDoorClosedTask);
+      if not ClosedTask.Wait(1000 * 60 * 3) then
+      begin
+        ClosedTask.Cancel;
+        warnning;
+      end;
+    end;
+    Sleep(50);
+  end;
+end;
+
 function TGame.Guard(): Boolean;
 var
   iRet: Integer;
@@ -625,66 +973,37 @@ begin
   // end;
 end;
 
+procedure TGame.HpHandle;
+var
+  iRet: Integer;
+  x, y: OleVariant;
+begin
+  iRet := FObj.CmpColor(37, 558, 'bb1111-444444', 1.0);
+  if iRet = 1 then
+  begin
+    iRet := FObj.FindPic(80, 553, 270, 592, '达人HP药剂.bmp', clPicOffsetZero,
+      0.9, 0, x, y);
+    if iRet > -1 then
+    begin
+      // FObj.KeyPressChar('1');
+      // Sleep(100);
+      FObj.MoveTo(x, y);
+      Sleep(100);
+      FObj.RightClick;
+      Sleep(200);
+      MoveToFixPoint;
+    end;
+  end;
+
+end;
+
 procedure TGame.InMapHandle;
-// 加血
-  procedure HpHandle;
-  var
-    iRet: Integer;
-    x, y: OleVariant;
-  begin
-    iRet := FObj.CmpColor(37, 558, 'bb1111-444444', 1.0);
-    if iRet = 1 then
-    begin
-      iRet := FObj.FindPic(80, 553, 270, 592, '达人HP药剂.bmp', clPicOffsetZero,
-        0.9, 0, x, y);
-      if iRet > -1 then
-      begin
-        // FObj.KeyPressChar('1');
-        // Sleep(100);
-        FObj.MoveTo(x, y);
-        Sleep(100);
-        FObj.RightClick;
-        Sleep(200);
-        MoveToFixPoint;
-      end;
-    end;
-
-  end;
-  function GetManPoint(var aManPoint: TPoint): Boolean;
-  begin
-    Result := False;
-    aManPoint := FMan.Point;
-    if FCheckTimeOut.IsManFindTimeOut(aManPoint) then // 必须把坐标传给他进行超时检测
-    begin
-      FMove.StopMove;
-      FMove.RandomMove; // 随机移动
-      FCheckTimeOut.ResetManStopWatch;
-    end
-    else
-      Result := True;
-  end;
-
-  procedure PickupGoods(aMiniMap: TMiniMap);
-  begin
-    // if not FCheckTimeOut.IsInMapPickupGoodsTimeOut(aMiniMap) then
-    // begin
-    if FGoods.IsArrivedGoods then
-    begin
-      FMove.StopMove;
-      FGoods.PickupGoods;
-      FCheckTimeOut.ResetManStopWatch;
-    end;
-    // end;
-  end;
 
 var
-  aMiniMap: TMiniMap;
-  ptMan: TPoint;
-  bDoorState: Boolean;
+  task: ITask;
 begin
 
-  aMiniMap := FMap.MiniMap; // 获取小地图
-  case aMiniMap of
+  case FMap.MiniMap of
     mmUnknown:
       FMove.StopMove; // 停止移动
     mmClickCards:
@@ -697,43 +1016,16 @@ begin
         FSkill.RestetSkills; // 重置技能
       end;
   else
-    CloseGameWindows; // 关闭所有窗口
-    HpHandle; // 血处理
-    if FSkill.ReleaseHelperSkill then // 释放辅助技能
-      FCheckTimeOut.ResetManStopWatch;
-    if not GetManPoint(ptMan) then // 获取人物坐标
-    begin
-      Exit;
-    end;
-
-    // 图很长时间没有变化了,进行报警
-    if FCheckTimeOut.IsInMapLongTimeOut(aMiniMap) then
-    begin
-      warnning;
-    end;
-    // 虚弱报警
-    if IsWeakInMap then
-    begin
-      warnning;
-    end;
-    PickupGoods(aMiniMap); // 捡物
-    bDoorState := FDoor.IsOpen;
-    if not FCheckTimeOut.CompareMiniMap(aMiniMap) then
-      FMove.StopMove; // 停止
-    if bDoorState then
-    begin
-      DoorOpenedHandle(aMiniMap, ptMan)
-    end
-    else
-    begin
-      DoorClosedHandle(aMiniMap, ptMan);
-    end;
-
+    task := TTask.Run(DoInNormalMapTask);
+    task.Wait();
   end;
 
 end;
 
-procedure TGame.LongTimeNoMoveHandle(const aManPoint: TPoint);
+procedure TGame.LongTimeNoMoveHandle(
+  const
+  aManPoint:
+  TPoint);
 begin
   if not aManPoint.IsZero then
   begin
@@ -764,8 +1056,7 @@ begin
     try
       TTask.CurrentTask.CheckCanceled; // 检测
       aLargeMap := FMap.LargeMap; // 获取大地图
-      if FCheckTimeOut.IsOutMapTimeOut(aLargeMap) then // 检测是否在图外超时
-        warnning;
+
       case aLargeMap of
         lmUnknown:
           UnknownMapHandle; // 未知图操作
@@ -787,65 +1078,13 @@ end;
 
 procedure TGame.OutMapHandle;
 var
-  ChangeRoleTask, GotoInMapTask: ITask;
+  OutMapTask: ITask;
 begin
-  CloseGameWindows; // 关闭所有窗口
-  FMove.StopMove;
-
-  // 虚弱进行等待
-  if IsWeak then
+  OutMapTask := TTask.Run(DoOutMapTask);
+  if not OutMapTask.Wait(1000 * 60 * 10) then // 超时报警
   begin
-    while IsWeak do
-    begin
-      Sleep(1000);
-    end;
-    CloseGameWindows; // 关闭窗口
-    // 不虚弱检测疲劳
-    if not IsHavePilao then
-    begin
-      // 开始换角色作业,并等待完成
-      ChangeRoleTask := TTask.Run(ChangeRole);
-      if not ChangeRoleTask.Wait(1000 * 60 * 2) then
-      begin
-        ChangeRoleTask.Cancel;
-        warnning;
-      end;
-    end
-    else
-    begin
-      // 开始进图作业,并等待完成
-      GotoInMapTask := TTask.Run(GoToInMap);
-      if not GotoInMapTask.Wait(1000 * 60 * 2) then
-      begin
-        GotoInMapTask.Cancel;
-        warnning;
-      end;
-    end;
-    FCheckTimeOut.ResetOutMapStopWatch; // 重置图外计时器
-  end
-  else
-  begin
-    // 不虚弱检测疲劳
-    if not IsHavePilao then
-    begin
-      // 开始换角色作业,并等待完成
-      ChangeRoleTask := TTask.Run(ChangeRole);
-      if not ChangeRoleTask.Wait(1000 * 60 * 2) then
-      begin
-        ChangeRoleTask.Cancel;
-        warnning;
-      end;
-    end
-    else
-    begin
-      // 开始进图作业,并等待完成
-      GotoInMapTask := TTask.Run(GoToInMap);
-      if not GotoInMapTask.Wait(1000 * 60 * 2) then
-      begin
-        GotoInMapTask.Cancel;
-        warnning;
-      end;
-    end;
+    OutMapTask.Cancel;
+    warnning;
   end;
 end;
 
@@ -894,7 +1133,10 @@ begin
   FGame := TGame.Create;
 end;
 
-procedure TGameService.SetHandle(const aHandle: THandle);
+procedure TGameService.SetHandle(
+  const
+  aHandle:
+  THandle);
 begin
   Application.Handle := aHandle;
 end;

@@ -15,6 +15,7 @@ type
     procedure SetManPoint(const value: TPoint);
 
     function GetIsOpen: Boolean;
+    function GetIsClose: Boolean;
     function GetPoint: TPoint;
     function GetKeyCode: Integer;
     function GetIsArrviedDoor: Boolean;
@@ -39,9 +40,19 @@ begin
   end;
 end;
 
-function TDoor.GetIsOpen: Boolean;
+function TDoor.GetIsClose: Boolean;
+var
+  x, y: OleVariant;
 const
   sColorDoorClose = 'fff700-000100'; // 门关闭时的颜色
+begin
+  Result := Obj.FindColorBlock(0, 0, 800, 600, sColorDoorClose, 1.0, 40, 8,
+    5, x, y) = 1;
+
+end;
+
+function TDoor.GetIsOpen: Boolean;
+const
   sColorDoorOpen = '5ac500-000100|00ff00-000100'; // 门开启时的颜色
   sColor = '00ff00-000100|5ac500-000100,1|0|00ff00-000100|5ac500-000100,0|1|00ff00-000100|5ac500-000100,1|1|00ff00-000100|5ac500-000100';
 var

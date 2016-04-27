@@ -274,6 +274,7 @@ type
 
   IDoor = interface(IGameBase)
     ['{9D2AD64F-AB22-44B3-8E75-5DF71746F99D}']
+    function GetIsClose: Boolean;
     function GetIsOpen: Boolean;
     function GetPoint: TPoint;
     function GetKeyCode: Integer;
@@ -287,6 +288,7 @@ type
     property KeyCode: Integer read GetKeyCode; // 按键
     property Point: TPoint read GetPoint;
     property IsOpen: Boolean read GetIsOpen;
+    property IsClose: Boolean read GetIsClose;
   end;
 
   IMove = interface;
@@ -476,7 +478,13 @@ begin
         TTask.CurrentTask.CheckCanceled;
         iRet := Obj.FindStr(0, 0, 800, 600, '网络连接中断', clStrWhite, 1.0, x, y);
         if iRet > -1 then // 如果是网络中断那么不执行关闭窗口
-          break;
+        begin
+          while not Terminated do
+          begin
+            sleep(500);
+          end;
+        end;
+
         iRet := Obj.FindStr(0, 0, 800, 600, '关闭|返回城镇', StrColorOffset('ddc593'),
           1.0, x, y);
         if iRet > -1 then
@@ -504,7 +512,7 @@ begin
       end;
 
     end);
-  if not task.Wait(1000 * 60) then
+  if not task.Wait(1000 * 60 * 3) then
     task.Cancel;
 end;
 
@@ -598,50 +606,53 @@ var
   task: ITask;
 begin
   FLock.Acquire;
-  task := TTask.Run(
-    procedure
-    var
-      hPlay: THandle;
-      sw, swLong: TStopWatch;
+  try
+    task := TTask.Run(
+      procedure
+      var
+        hPlay: THandle;
+        sw, swLong: TStopWatch;
+      begin
+        if GameData.GameConfig.bWarning then
+        begin
+          hPlay := Obj.Play('wife.mp3');
+          sw := TStopWatch.StartNew; // 计时
+          swLong := TStopWatch.StartNew;
+          while (not Terminated) do
+          begin
+            TTask.CurrentTask.CheckCanceled;
+            if swLong.ElapsedMilliseconds >= (1000 * 60 * 10) then
+            begin
+              Obj.Stop(hPlay); // 超出10分钟停止报警
+              sleep(100);
+              break;
+            end;
+            if sw.ElapsedMilliseconds >= (1000 * 60 * 3) then
+            begin
+              Obj.Stop(hPlay);
+              sleep(100);
+              hPlay := Obj.Play('wife.mp3');
+              sw.Reset; // 重置
+            end;
+            sleep(500);
+          end;
+          sleep(200);
+          Obj.Stop(hPlay);
+        end
+        else
+        begin
+          while not Terminated do
+          begin
+            sleep(1000);
+            TTask.CurrentTask.CheckCanceled;
+          end;
+        end;
+      end);
+    task.Wait();
+  finally
+    FLock.Release;
+  end;
 
-    begin
-      if GameData.GameConfig.bWarning then
-      begin
-        hPlay := Obj.Play('wife.mp3');
-        sw := TStopWatch.StartNew; // 计时
-        swLong := TStopWatch.StartNew;
-        while (not Terminated) do
-        begin
-          TTask.CurrentTask.CheckCanceled;
-          if swLong.ElapsedMilliseconds >= (1000 * 60 * 10) then
-          begin
-            Obj.Stop(hPlay); // 超出10分钟停止报警
-            sleep(100);
-            break;
-          end;
-          if sw.ElapsedMilliseconds >= (1000 * 60 * 3) then
-          begin
-            Obj.Stop(hPlay);
-            sleep(100);
-            hPlay := Obj.Play('wife.mp3');
-            sw.Reset; // 重置
-          end;
-          sleep(500);
-        end;
-        sleep(200);
-        Obj.Stop(hPlay);
-      end
-      else
-      begin
-        while not Terminated do
-        begin
-          sleep(1000);
-          TTask.CurrentTask.CheckCanceled;
-        end;
-      end;
-    end);
-  task.Wait();
-  FLock.Release;
 end;
 
 { TRectHelper }

@@ -75,8 +75,8 @@ procedure TForm3.btnGuardClick(Sender: TObject);
 begin
   if GameService.Guard then
   begin
-    stat1.Panels[1].Text := 'Enable' ;
-      btnGuard.Enabled := False;
+    stat1.Panels[1].Text := 'Enable';
+    btnGuard.Enabled := False;
   end
   else
     stat1.Panels[1].Text := 'Disable';

@@ -249,7 +249,7 @@ begin
   // rtSearch := Rect(FManPoint.x - 180, FManPoint.y - 100, FManPoint.x + 180,
   // FManPoint.y + 50);
   // 设置机枪手范围
-  rtSearch.Offset(0, -170);
+  rtSearch.Offset(0, -170); // 搜寻范围上移170
   // rtSearch.Inflate(60, 40);
   rtSearch.DmNormalizeRect;
   CodeSite.Send('人物搜索机枪手怪物范围', rtSearch);
@@ -260,25 +260,24 @@ begin
   begin
     // 还原范围
     rtSearch.Offset(0, 170);
-    // rtSearch.Inflate(-60, -40);
     rtSearch.DmNormalizeRect;
     // 如果范围内没找到怪物,那么寻找字和图的怪物坐标,看看是否在范围内
     ptMonster := FindMonster(rtSearch);
     if ptMonster.IsZero then
     begin
-      CodeSite.Send('人物范围内未搜索到怪物,执行范围坐标对比');
-      ptMonster := FindMonster(cGlobalMonsterRect);
-      // 如果找到坐标
-      if not ptMonster.IsZero then
-      begin
-        if rtSearch.Contains(ptMonster) then
-        begin
-          CodeSite.Send('对比成功,怪物坐标在人物范围内');
-          Result := True;
-        end
-        else
-          CodeSite.Send('对比失败,怪物坐标未在人物范围内');
-      end;
+      // CodeSite.Send('人物范围内未搜索到怪物,执行范围坐标对比');
+      // ptMonster := FindMonster(cGlobalMonsterRect);
+      // // 如果找到坐标
+      // if not ptMonster.IsZero then
+      // begin
+      // if rtSearch.Contains(ptMonster) then
+      // begin
+      // CodeSite.Send('对比成功,怪物坐标在人物范围内');
+      // Result := True;
+      // end
+      // else
+      // CodeSite.Send('对比失败,怪物坐标未在人物范围内');
+      // end;
     end
     else
     begin
@@ -324,7 +323,7 @@ begin
   else
   begin
     iRet := Obj.FindStr(aRect.Left, aRect.Top, aRect.Right, aRect.Bottom,
-      sNameEx, StrColorOffset(sColor), 1.0, x, y);
+      sNameEx, clStrWhite, 1.0, x, y);
     if iRet > -1 then
     begin
       Result.x := x;
