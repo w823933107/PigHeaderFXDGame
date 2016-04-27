@@ -85,6 +85,7 @@ begin
     // À¿¡È¥¶¿Ì
     slSiwangzhizhua;
     slShaluluanwu;
+    NormalX;
   end;
 
 end;

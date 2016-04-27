@@ -183,7 +183,7 @@ var
       if iRet > -1 then
       begin
         Sleep(5000);
-        CloseGameWindows;
+        CloseGameWindows; // 等待5秒后关闭所有窗口
         Break;
       end
       else
@@ -200,19 +200,19 @@ begin
   SelectMemu;
   GotoSelectRole;
   GotoInGame;
-  FGameData.RoleInfo := FRoleInfoHandle.GetRoleInfo; // 重新设置人物信息
-  if (FGameData.RoleInfo.MainJob <> mjKuangzhanshi) and
-    (FGameData.RoleInfo.MainJob <> mjYuxuemoshen) and
-    (FGameData.RoleInfo.MainJob <> mjSilingshushi) and
-    (FGameData.RoleInfo.MainJob <> mjLinghunshougezhe)
+  FGameData^.RoleInfo := FRoleInfoHandle.GetRoleInfo; // 重新设置人物信息
+  if (FGameData^.RoleInfo.MainJob <> mjKuangzhanshi) and
+    (FGameData^.RoleInfo.MainJob <> mjYuxuemoshen) and
+    (FGameData^.RoleInfo.MainJob <> mjSilingshushi) and
+    (FGameData^.RoleInfo.MainJob <> mjLinghunshougezhe)
   then
     warnning;
   // 等级检测
-  if FGameData.RoleInfo.Lv <= 50 then
+  if FGameData^.RoleInfo.Lv <= 50 then
     warnning;
   // 等级较大的重新设置地图等级
-  if FGameData.RoleInfo.Lv >= 80 then
-    FGameData.GameConfig.iMapLv := 3;
+  if FGameData^.RoleInfo.Lv >= 80 then
+    FGameData^.GameConfig.iMapLv := 3;
 end;
 
 procedure TGame.DoDoorClosedTask;
@@ -263,6 +263,7 @@ begin
           if swMan.ElapsedMilliseconds > 1000 * 5 then // 3秒位置没变进行随机移动
           begin
             FMove.StopMove;
+            FSkill.DestroyBarrier;
             FMove.RandomMove;
             ptOldMan := TPoint.Zero;
             Sleep(20);
@@ -373,6 +374,7 @@ begin
           if swMan.ElapsedMilliseconds > 1000 * 5 then // 3秒位置没变进行随机移动
           begin
             FMove.StopMove;
+            FSkill.DestroyBarrier;
             FMove.RandomMove;
             ptOldMan := TPoint.Zero;
             Continue;
@@ -454,7 +456,7 @@ begin
   FObj.SetShowErrorMsg(0); // 关闭弹出
   FGameData.Terminated := False;
   FGameData.Obj := FObj;
-  GameData := FGameData;
+  SetGameData(FGameData);
   FMyObj := TObjFactory.CreateMyObj(FObj);
   FGameData.MyObj := FMyObj;
   FGameConfigManager := GlobalContainer.Resolve<IGameConfigManager>;
@@ -1043,7 +1045,7 @@ var
   aLargeMap: TLargeMap;
 begin
   CloseGameWindows; // 关闭所有窗口
-  FGameData.RoleInfo := FRoleInfoHandle.GetRoleInfo; // 获取角色信息,获取失败抛出异常
+  FGameData^.RoleInfo := FRoleInfoHandle.GetRoleInfo; // 获取角色信息,获取失败抛出异常
   if FGameData.RoleInfo.Lv <= 50 then
     raise EGame.Create('Lv too low');
   if FGameData.GameConfig.bVIP then // 依据类型设置字的颜色
