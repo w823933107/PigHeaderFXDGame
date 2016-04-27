@@ -43,13 +43,10 @@ type
     procedure UnknownMapHandle; // 未知图操作
     procedure CreateGameObjs(aGameData: PGameData); // 创建对象集
     procedure FreeGameObjs;
-    procedure DoorClosedHandle(aMiniMap: TMiniMap; aManPoint: TPoint);
-    procedure DoorOpenedHandle(aMiniMap: TMiniMap; aManPoint: TPoint);
-  strict private
-    procedure LongTimeNoMoveHandle(const aManPoint: TPoint);
 
   private
     function GetManPoint: TPoint;
+    function GetDoorPoint: TPoint;
   private
     // 图外的相关任务
     procedure DoOutMapTask;
@@ -266,7 +263,6 @@ begin
             FSkill.DestroyBarrier;
             FMove.RandomMove;
             ptOldMan := TPoint.Zero;
-            Sleep(20);
             Continue;
           end;
         end
@@ -331,7 +327,7 @@ begin
         end;
       end;
     end;
-    Sleep(20);
+    LoopDelay();
   end;
 end;
 
@@ -414,12 +410,13 @@ begin
         end
         else
         begin
-          ptDoor := FDoor.Point;
-          FMove.MoveToDoor(ptMan, ptDoor, OldMiniMap);
+          ptDoor := GetDoorPoint;
+          if not ptDoor.IsZero then
+            FMove.MoveToDoor(ptMan, ptDoor, OldMiniMap);
         end;
       end;
     end;
-    Sleep(20);
+    LoopDelay();
   end;
 end;
 
@@ -506,98 +503,6 @@ begin
   FGameConfigManager := nil;
   FMyObj.Free;
   inherited;
-end;
-
-procedure TGame.DoorClosedHandle(aMiniMap: TMiniMap;
-  aManPoint:
-  TPoint);
-var
-  ptMonster, ptMonsterArrived: TPoint;
-begin
-  FMonster.ManPoint := aManPoint;
-  ptMonster := FMonster.Point; // 获取怪物坐标
-  // 长时间未获得怪物坐标进行寻怪
-  if FCheckTimeOut.IsMonsterFindTimeOut(ptMonster) then
-  begin
-    FMove.StopMove;
-    FMove.MoveToFindMonster(aManPoint, aMiniMap);
-    LongTimeNoMoveHandle(aManPoint);
-    Exit;
-  end;
-  // 移动向怪物
-  if not ptMonster.IsZero then
-  begin
-    if FMonster.IsArriviedMonster(ptMonsterArrived) then
-    begin
-      // 调整方向
-      if FGameData.GameConfig.bNearAdjustDirection then
-      begin
-        if ptMonsterArrived.x < (aManPoint.x - 5) then
-        begin
-          Obj.KeyPressChar('left');
-          Sleep(60);
-        end
-        else
-          if ptMonsterArrived.x > (aManPoint.x + 5) then
-        begin
-          Obj.KeyPressChar('right');
-          Sleep(60);
-        end;
-      end;
-      // 达到怪物杀怪
-      FMove.StopMove;
-      FSkill.ReleaseSkill;
-      FCheckTimeOut.ResetManStopWatch;
-    end
-    else
-    begin
-      FMove.MoveToMonster(aManPoint, ptMonster, aMiniMap);
-      LongTimeNoMoveHandle(aManPoint);
-    end;
-
-  end;
-
-end;
-
-procedure TGame.DoorOpenedHandle(aMiniMap: TMiniMap;
-  aManPoint:
-  TPoint);
-var
-  ptDoor, ptGoods: TPoint;
-begin
-  // 10s捡物
-  if not FCheckTimeOut.IsInMapPickupGoodsOpenedTimeOut(aMiniMap) then
-  begin
-    FGoods.ManPoint := aManPoint; // 用来计算最近物品坐标
-    ptGoods := FGoods.Point; // 获取物品坐标
-    if not ptGoods.IsZero then
-    begin
-      // 有物品走向物品,不继续执行进门
-      FMove.MoveToGoods(aManPoint, ptGoods, aMiniMap);
-      LongTimeNoMoveHandle(aManPoint);
-      FCheckTimeOut.ResetManStopWatch;
-      Exit;
-    end;
-  end;
-  // 超时进门
-  FDoor.ManPoint := aManPoint;
-  FDoor.MiniMap := aMiniMap;
-  if FDoor.IsArrviedDoor then // 到达门,进门
-  begin
-    FMove.StopMove;
-    FMove.MoveInDoor(FDoor.KeyCode);
-  end
-  else
-  begin
-    ptDoor := FDoor.Point; // 获得门坐标
-    if not ptDoor.IsZero then
-    begin
-      FMove.MoveToDoor(aManPoint, ptDoor, aMiniMap); // 进门
-    end;
-    LongTimeNoMoveHandle(aManPoint);
-    FCheckTimeOut.ResetManStopWatch;
-  end;
-
 end;
 
 procedure TGame.DoOutMapTask;
@@ -712,11 +617,7 @@ begin
       on E: EGame do
       begin
         Application.MessageBox(PWideChar(E.Message), '警告');
-        raise;
-        CodeSite.Send('error operator');
-      end
-      else
-        raise;
+      end;
     end;
   finally
     CodeSite.Send('start to clear ');
@@ -725,6 +626,34 @@ begin
     CoUninitialize;
     // 清除所有作业 ,调用后似乎不能正确执行
   end;
+end;
+
+function TGame.GetDoorPoint: TPoint;
+var
+  task: ITask;
+  ptDoor: PPoint;
+begin
+  Result := TPoint.Zero;
+  ptDoor := @Result;
+  task := TTask.Run(
+    procedure
+    begin
+      while not Terminated do
+      begin
+        TTask.CurrentTask.CheckCanceled;
+        ptDoor^ := FDoor.Point;
+        if not ptDoor^.IsZero then
+          Break;
+        Sleep(100);
+      end;
+    end);
+  if not task.Wait(1000 * 4) then // 等待4秒还是未获得进行随机移动
+  begin
+    task.Cancel;
+    FSkill.DestroyBarrier;
+    FMove.RandomMove;
+  end;
+
 end;
 
 function TGame.GetManPoint: TPoint;
@@ -939,7 +868,7 @@ begin
         warnning;
       end;
     end;
-    Sleep(50);
+    LoopDelay();
   end;
 end;
 
@@ -971,7 +900,7 @@ begin
     Application.MessageBox(PChar('block驱动加载失败,错误码:' + iRet.ToString), '错误');
     Application.Terminate;
   end;
-  Result := True;
+  Result := true;
   // end;
 end;
 
@@ -1000,11 +929,9 @@ begin
 end;
 
 procedure TGame.InMapHandle;
-
 var
   task: ITask;
 begin
-
   case FMap.MiniMap of
     mmUnknown:
       FMove.StopMove; // 停止移动
@@ -1024,22 +951,6 @@ begin
 
 end;
 
-procedure TGame.LongTimeNoMoveHandle(
-  const
-  aManPoint:
-  TPoint);
-begin
-  if not aManPoint.IsZero then
-  begin
-    if FCheckTimeOut.IsManMoveTimeOut(aManPoint) then // 如果人物坐标长时间没有变化,说明卡位了
-    begin
-      FMove.StopMove;
-      FSkill.DestroyBarrier; // 破坏一下障碍
-      FMove.RandomMove; // 随机移动
-    end;
-  end;
-end;
-
 procedure TGame.LoopHandle;
 var
   aLargeMap: TLargeMap;
@@ -1055,26 +966,17 @@ begin
   FCheckTask := TTask.Run(CheckTask); // 运行检测任务
   while (not Terminated) do
   begin
-    try
-      TTask.CurrentTask.CheckCanceled; // 检测
-      aLargeMap := FMap.LargeMap; // 获取大地图
-
-      case aLargeMap of
-        lmUnknown:
-          UnknownMapHandle; // 未知图操作
-        lmOut:
-          OutMapHandle; // 图内操作
-        lmIn:
-          InMapHandle; // 图内操作
-      end;
-      Sleep(GameData.GameConfig.iLoopDelay); // 循环延时
-    except
-      on E: EInvalidOp do // 屏蔽这个错误
-      begin
-
-      end;
+    TTask.CurrentTask.CheckCanceled; // 检测
+    aLargeMap := FMap.LargeMap; // 获取大地图
+    case aLargeMap of
+      lmUnknown:
+        UnknownMapHandle; // 未知图操作
+      lmOut:
+        OutMapHandle; // 图内操作
+      lmIn:
+        InMapHandle; // 图内操作
     end;
-
+    LoopDelay(); // 循环延时
   end;
 end;
 
@@ -1103,7 +1005,7 @@ procedure TGame.Stop;
 begin
   if Assigned(FMainTask) then
   begin
-    FGameData.Terminated := True;
+    FGameData.Terminated := true;
     FMainTask.Cancel;
   end;
   if Assigned(FCheckTask) then

@@ -209,7 +209,7 @@ type
     function GetTerminated: Boolean;
     function GetMyObj: TMyObj;
   protected
-
+    procedure LoopDelay;
     // ±¨¾¯
     procedure Warnning;
     // ¹Ø±Õ´°¿Ú
@@ -580,6 +580,11 @@ begin
     0.9, 0, x, y);
   Result := iRet > -1;
 
+end;
+
+procedure TGameBase.LoopDelay;
+begin
+  sleep(20);
 end;
 
 procedure TGameBase.MoveToFixPoint;
