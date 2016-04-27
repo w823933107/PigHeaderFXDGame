@@ -5,7 +5,7 @@ unit uGameEx.Config;
 
 interface
 
-uses uGameEx.Interf, System.IniFiles, qjson;
+uses uGameEx.Interf, qjson;
 
 type
   // 使用Json保存配置文件

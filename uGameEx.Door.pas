@@ -2,7 +2,7 @@ unit uGameEx.Door;
 
 interface
 
-uses uGameEx.Interf, System.Types, CodeSiteLogging;
+uses uGameEx.Interf, System.Types;
 
 type
   TDoor = class(TGameBase, IDoor)

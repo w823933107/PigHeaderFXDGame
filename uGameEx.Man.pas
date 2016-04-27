@@ -2,7 +2,7 @@ unit uGameEx.Man;
 
 interface
 
-uses uGameEx.Interf, System.Types, System.Diagnostics;
+uses uGameEx.Interf, System.Types;
 
 type
   TMan = class(TGameBase, IMan)

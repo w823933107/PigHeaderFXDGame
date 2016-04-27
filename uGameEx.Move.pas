@@ -268,9 +268,7 @@ begin
   // 获取随机数种子  0<=x<2;
   Randomize;
   iLR := Random(2); // 左移移动方向
-  Randomize;
   iUD := Random(2); // 上下移动方向
-  Randomize;
   iType := Random(2); // 移动方式
   case iType of
     // 左右上下同时移动的方式

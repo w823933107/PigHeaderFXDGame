@@ -4,8 +4,8 @@ interface
 
 uses
   ServiceFunc,
-  System.SysUtils, System.Classes, Data.DBXDataSnap,
-  IPPeerClient, Data.DBXCommon, Data.DB, Data.SqlExpr;
+  System.SysUtils, System.Classes,
+  Data.DB, Data.SqlExpr, Data.DBXDataSnap, IPPeerClient, Data.DBXCommon;
 
 type
   TClientModule1 = class(TDataModule)

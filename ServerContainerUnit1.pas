@@ -4,8 +4,7 @@ interface
 
 uses System.SysUtils, System.Classes,
   Datasnap.DSTCPServerTransport,
-  Datasnap.DSServer, Datasnap.DSCommonServer,
-  Datasnap.DSAuth, IPPeerServer;
+  Datasnap.DSServer, IPPeerServer, Datasnap.DSCommonServer;
 
 type
   TServerContainer1 = class(TDataModule)

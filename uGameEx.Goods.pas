@@ -2,8 +2,7 @@ unit uGameEx.Goods;
 
 interface
 
-uses uGameEx.Interf, System.Types, System.SysUtils, System.Diagnostics,
-  CodeSiteLogging;
+uses uGameEx.Interf, System.Types, System.SysUtils;
 
 type
   TGoods = class(TGameBase, IGoods)

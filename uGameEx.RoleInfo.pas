@@ -10,7 +10,7 @@ interface
 // {$DEFINE USE_CODESITE}
 
 uses uGameEx.Interf, System.SysUtils, uObj, System.RegularExpressions,
-  CodeSiteLogging, System.Types, System.Threading;
+  CodeSiteLogging, System.Types, System.Threading,Vcl.Dialogs;
 
 type
 
@@ -180,9 +180,8 @@ end;
 function TRoleInfoHandle.GetRoleInfo: TRoleInfo;
 var
   task: ITask;
-  RoleInfo: PRoleInfo;
+  RoleInfo: TRoleInfo;
 begin
-  RoleInfo := @Result;
   task := TTask.Run(
     procedure()
     var
@@ -225,7 +224,7 @@ begin
     task.Cancel;
     Warnning;
   end;
-
+  Result := RoleInfo;
 end;
 
 function TRoleInfoHandle.GetRoleName: string;
@@ -284,7 +283,6 @@ begin
     for I := 1 to FNameWithLv.Length do
     begin
       if not TryStrToInt(FNameWithLv[I], iTemp) then // 如果不是数字
-      // if not StrIsDigit(AnsiString(FName[I])) then // 如果不是数字,JCL单元功能
       begin
         if I = FNameWithLv.Length then
           Result := Result + FNameWithLv[I] // 最后一位不用加分隔符

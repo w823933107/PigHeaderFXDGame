@@ -1,4 +1,4 @@
-// 
+//
 // Created by the DataSnap proxy generator.
 // 2016/4/27 14:35:43
 // 
@@ -7,7 +7,7 @@ unit ClientClassesUnit1;
 
 interface
 
-uses System.JSON, Data.DBXCommon, Data.DBXClient, Data.DBXDataSnap, Data.DBXJSON, Datasnap.DSProxy, System.Classes, System.SysUtils, Data.DB, Data.SqlExpr, Data.DBXDBReaders, Data.DBXCDSReaders, Data.DBXJSONReflect;
+uses Data.DBXCommon, Datasnap.DSProxy, System.Classes, System.SysUtils;
 
 type
   TServerMethods1Client = class(TDSAdminClient)

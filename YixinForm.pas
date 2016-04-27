@@ -2,30 +2,21 @@ unit YixinForm;
 
 interface
 
-uses QPlugins, qplugins_vcl_messages,
-  qplugins_formsvc, qplugins_loader_lib,
+uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ComCtrls,
-  Vcl.ExtCtrls;
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ComCtrls;
 
 type
-  IFormService = interface
-    ['{B44D6B79-9508-45A7-90E9-392074533F5D}']
-    function ShowModal: Integer;
-    procedure Show;
-  end;
 
   IGameService = interface
     ['{2BE5BFB6-1647-461E-A668-F34A3331FBAC}']
-    procedure Prepare;
     procedure Start;
     procedure Stop;
     function Guard(): Boolean;
-    procedure SetHandle(const aHandle: THandle);
   end;
 
-  TCreateForm = function(aHandle: THandle): IFormService;
+  TCreateForm = function(aHwnd: THandle): TForm;
   TCreateGameService = function: IGameService;
 
   TForm3 = class(TForm)
@@ -39,13 +30,14 @@ type
     procedure btn2Click(Sender: TObject);
     procedure btn3Click(Sender: TObject);
     procedure btnGuardClick(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
   private
     { Private declarations }
   public
     { Public declarations }
     GameService: IGameService;
-    ConfigForm: IQFormService;
-    // ConfigForm: IFormService;
+    ConfigForm: TForm;
+    hdll: HMODULE;
   end;
 
 var
@@ -56,7 +48,7 @@ implementation
 {$R *.dfm}
 
 
-uses ClientModuleUnit1;
+
 
 procedure TForm3.btn1Click(Sender: TObject);
 begin
@@ -85,46 +77,30 @@ begin
 end;
 
 procedure TForm3.FormCreate(Sender: TObject);
-  procedure UpdataModule;
-  var
-    Version: TQVersion;
-    releaseVersion: Byte;
-    stream: TBytesStream;
-    FileBytes: TBytes;
-    aVer: IQVersion;
-  begin
-    // ClientModule1.SQLConnection1.Open;
-    aVer := (PluginsManager.ById(IQVersion) as IQVersion);
-    aVer.GetVersion(Version);
-//    if not ClientModule1.ServerMethods1Client.GetReleaseVersion(releaseVersion)
-//    then
-//    begin
-//      PluginsManager.Stop;
-//      ClientModule1.ServerMethods1Client.GetDllFile.ToBytes(FileBytes, 0);
-//      DeleteFile('pigheader.dll');
-//      stream := TBytesStream.Create(FileBytes);
-//      try
-//        stream.SaveToFile('pigheader.dll');
-//      finally
-//        stream.Free;
-//      end;
-//      ClientModule1.SQLConnection1.Connected := False;
-//      ShowMessage('已更新程序,请重新启动程序');
-//      Application.Terminate;
-   // end;
-    ClientModule1.SQLConnection1.Close;
-  end;
-
+var
+  CreateForm: TCreateForm;
+  CreateGameService: TCreateGameService;
+label error;
 begin
-  ReportMemoryLeaksOnShutdown := Boolean(DebugHook);
-  PluginsManager.Loaders.Add
-    (TQDLLLoader.Create('.\', '.dll'));
-  PluginsManager.Start;
-  UpdataModule;
-  GameService := PluginsManager.ById(IGameService) as IGameService;
-  ConfigForm := PluginsManager.ByPath('Services/Form/Config') as IQFormService;
-  GameService.Prepare;
+  hdll := SafeLoadLibrary('pigheader.dll');
+  if hdll = 0 then
+    goto error;
+  CreateForm := GetProcAddress(hdll, 'CreateForm');
+  CreateGameService := GetProcAddress(hdll, 'CreateGameService');
+  if (not Assigned(CreateForm)) or (not Assigned(CreateGameService)) then
+    goto error;
+  ConfigForm := CreateForm(Application.Handle);
+  GameService := CreateGameService;
+  Exit;
+error:
+  Application.MessageBox('加载失败', '提示');
+  Application.Terminate;
+end;
 
+procedure TForm3.FormDestroy(Sender: TObject);
+begin
+  GameService := nil;
+  ConfigForm.Free;
 end;
 
 initialization

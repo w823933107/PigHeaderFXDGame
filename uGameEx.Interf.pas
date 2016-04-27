@@ -3,8 +3,8 @@ unit uGameEx.Interf;
 
 interface
 
-uses uObj, System.SysUtils, QWorker, System.Types, Spring,
-  CodeSiteLogging, System.Threading, System.SyncObjs;
+uses uObj, System.SysUtils, System.Types, Spring,
+  System.Threading, System.SyncObjs, Vcl.Forms;
 
 const
   // 路径配置
@@ -37,22 +37,14 @@ const
 type
   EGame = Exception;
 
-  IFormService = interface
-    ['{B44D6B79-9508-45A7-90E9-392074533F5D}']
-    function ShowModal: Integer;
-    procedure Show;
-  end;
-
   IGameService = interface
     ['{2BE5BFB6-1647-461E-A668-F34A3331FBAC}']
-    procedure Prepare;
     procedure Start;
     procedure Stop;
     function Guard(): Boolean;
-    procedure SetHandle(const aHandle: THandle);
   end;
 
-  TCreateForm = function(aHandle: THandle): IFormService;
+  TCreateForm = function(aHandle: THandle): TForm;
   TCreateGameService = function: IGameService;
 
   TRectHelper = record helper for TRect
@@ -523,7 +515,7 @@ end;
 
 class destructor TGameBase.Destroy;
 begin
-   TGameBase.FLock.Free;
+  TGameBase.FLock.Free;
 end;
 
 function TGameBase.GetMyObj: TMyObj;
@@ -620,6 +612,7 @@ begin
       if GameData.GameConfig.bWarning then
       begin
         hPlay := Obj.Play('wife.mp3');
+        sleep(50);
         sw := TStopWatch.StartNew; // 计时
         swLong := TStopWatch.StartNew;
         while (not Terminated) do
@@ -636,6 +629,7 @@ begin
             Obj.Stop(hPlay);
             sleep(100);
             hPlay := Obj.Play('wife.mp3');
+            sleep(50);
             sw.Reset; // 重置
           end;
           sleep(500);
@@ -653,7 +647,7 @@ begin
       end;
     end);
   task.Wait();
-  FLock.Release;
+  FLock.Leave;
 end;
 
 { TRectHelper }

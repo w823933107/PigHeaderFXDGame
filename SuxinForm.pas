@@ -3,7 +3,7 @@ unit SuxinForm;
 interface
 
 uses
-  uGameEx.Interf, uGameEx.Config,
+  uGameEx.Interf,
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ComCtrls,
@@ -76,8 +76,7 @@ implementation
 {$R *.dfm}
 
 
-uses Spring.Container, QPlugins, qplugins_vcl_messages, qplugins_vcl_formsvc,
-  CodeSiteLogging;
+uses Spring.Container,CodeSiteLogging;
 
 procedure TConfigForm.btnResetDefaultConfigClick(Sender: TObject);
 var
@@ -180,10 +179,10 @@ end;
 
 initialization
 
-RegisterFormService('Services/Form', 'Config', TConfigForm, False);
+
 
 finalization
 
-UnregisterServices('Services/Form', ['Config']);
+
 
 end.

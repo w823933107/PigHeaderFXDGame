@@ -2,7 +2,7 @@ unit uGameEx.Monster;
 
 interface
 
-uses uGameEx.Interf, System.Types, System.Diagnostics, CodeSiteLogging;
+uses uGameEx.Interf, System.Types, CodeSiteLogging;
 
 type
 

@@ -1,4 +1,11 @@
 {
+
+ 2016/4/27
+  =====================
+  *修正TMyObj.OcrEx函数错误
+  2016/4/27
+  =====================
+  *移除注册码加密功能
   2016/3/20
   =====================
   *修正程序退出时dll管理器未释放,造成内存泄露的错误
@@ -10,7 +17,7 @@ unit uObj;
 interface
 
 uses
-  qaes, System.Generics.Collections, Winapi.Windows, Winapi.ActiveX,
+  System.Generics.Collections, Winapi.Windows, Winapi.ActiveX,
   System.Win.ComObj, System.SysUtils, Vcl.Clipbrd;
 
 const
@@ -113,7 +120,7 @@ type
     destructor Destroy; override;
     // 获取字符串及其坐标 ,返回动态数组
     function OcrEx(X1, Y1, X2, Y2: Integer; color_format: string; sim: Double;
-      var OutStr: string): TArray<TOcrStr>;
+      out OutStr: string): TArray<TOcrStr>;
     // function FindPic(aName: string): Integer; overload;
     // function FindPic(aName: string; out aOutX, aOutY: Integer)
     // : Integer; overload;
@@ -1758,29 +1765,15 @@ end;
 
 class function TObjFactory.CreateChargeObj: IChargeObj;
 var
-  aRegCode, aRegVer: string;
-  aRet: Integer;
-  aAes: TQAES;
-const
-  cKey = 'dsadasfllhgfghfgdfsdeefvddghffghh';
-  // 初始化向量
-  cInitVector: TQAESBuffer = ($21, $20, $B9, $3B, $99, $86, $41, $A5, $87, $80,
-    $54, $0B, $C9, $A8, $B4, $E7);
-
+  iRet: Integer;
 begin
   Result := TComService.NoRegCreateComObj(CLASS_DMPluginInterface,
     TObjConfig.ChargeFullPath) as IChargeObj;
   if not Assigned(Result) then
     raise Exception.Create('创建收费对象失败！');
-
-  aRegCode := aAes.AsCBC(cInitVector, cKey).Encrypt(TObjConfig.RegCode);
-  aRegVer := aAes.AsCBC(cInitVector, cKey).Encrypt(TObjConfig.RegVer);
-  aRegCode := aAes.AsCBC(cInitVector, cKey).Decrypt(aRegCode);
-  aRegVer := aAes.AsCBC(cInitVector, cKey).Decrypt(aRegVer);
-
-  aRet := Result.Reg(aRegCode, aRegVer);
-  if aRet <> 1 then
-    raise Exception.CreateFmt('插件收费功能注册失败，错误码：%d', [aRet]);
+  iRet := Result.Reg(TObjConfig.RegCode, TObjConfig.RegVer);
+  if iRet <> 1 then
+    raise Exception.CreateFmt('插件收费功能注册失败，错误码：%d', [iRet]);
 end;
 
 class function TObjFactory.CreateFreeObj: IFreeObj;
@@ -1817,7 +1810,7 @@ begin
 end;
 
 function TMyObj.OcrEx(X1, Y1, X2, Y2: Integer; color_format: string;
-  sim: Double; var OutStr: string): TArray<TOcrStr>;
+  sim: Double; out OutStr: string): TArray<TOcrStr>;
 var
   Str: string;
   strAndPosArr: TArray<string>;
@@ -1826,6 +1819,7 @@ var
   ocrStr: TOcrStr;
 begin
 {$IFDEF USE_CODESITE} CodeSite.TraceMethod(Self, 'OcrEx'); {$ENDIF}
+  OutStr := '';
   Str := FObj.OcrEx(X1, Y1, X2, Y2, color_format, sim); // 识别字
   strAndPosArr := Str.Split(['|']); // 进行一次分割
   Result := [];

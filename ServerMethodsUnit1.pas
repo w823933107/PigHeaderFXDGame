@@ -3,7 +3,7 @@ unit ServerMethodsUnit1;
 interface
 
 uses System.SysUtils, System.Classes, System.Json,
-  Datasnap.DSServer, Datasnap.DSAuth, Datasnap.DSProviderDataModuleAdapter,
+  Datasnap.DSProviderDataModuleAdapter,
   QPlugins;
 
 type

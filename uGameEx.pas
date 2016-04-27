@@ -8,14 +8,14 @@ unit uGameEx;
 interface
 
 uses uGameEx.Interf, System.SysUtils, uObj, Winapi.Windows,
-  Spring.Container, CodeSiteLogging, Vcl.Forms, uGameEx.RegisterClass, QPlugins,
+  Spring.Container, CodeSiteLogging, Vcl.Forms, uGameEx.RegisterClass,
   System.Types, System.Threading, Winapi.ActiveX, System.Classes,
   System.Diagnostics;
 
 type
 
   // 游戏主逻辑
-  TGame = class(TGamebase)
+  TGame = class(TGamebase, IGameService)
   private
     FObj: IChargeObj;
     FMyObj: TMyObj;
@@ -32,7 +32,6 @@ type
     FMan: IMan;
     FMonster: IMonster;
     FGoods: IGoods;
-    FCheckTimeOut: ICheckTimeOut;
     FSkill: ISkill;
   strict private
     procedure GameTask; // 主逻辑作业
@@ -43,7 +42,6 @@ type
     procedure UnknownMapHandle; // 未知图操作
     procedure CreateGameObjs(aGameData: PGameData); // 创建对象集
     procedure FreeGameObjs;
-
   private
     function GetManPoint: TPoint;
     function GetDoorPoint: TPoint;
@@ -64,27 +62,6 @@ type
     procedure Start; // 配置信息
     procedure Stop;
     function Guard(): Boolean;
-  end;
-
-  // 为了支持插件,进行了再次封装
-  TGameService = class(TQService, IGameService)
-  private
-    FGame: TGame;
-  public
-    destructor Destroy; override;
-    procedure SetHandle(const aHandle: THandle);
-    procedure Prepare; // 由于部分功能放在插件的钩子函数中会导致程序卡住不出来,所以只能这样了
-    procedure Start; // 开始
-    function Guard: Boolean; // 如果启用了保护返回true,否则返回false
-    procedure Stop; // 停止
-  end;
-
-  TGameVersion = class(TQService, IQService)
-  const
-    Version: TQVersion = (Version: (Major: 0; Minor: 0; Release: 1; Build: 0);
-      Company: ''; Name: ''; Description: ''; FileName: '');
-  public
-    function GetVersion(var AVerInfo: TQVersion): Boolean; stdcall;
   end;
 
 implementation
@@ -187,7 +164,7 @@ var
         StrColorOffset('f7d65a'), 1.0, x, y);
       if iRet > -1 then
       begin
-        Sleep(5000);
+        Sleep(3000);
         CloseGameWindows; // 等待5秒后关闭所有窗口
         Break;
       end
@@ -199,25 +176,32 @@ var
       Sleep(100);
     end;
   end;
+  procedure UpdateRoleInfo;
+  var
+    RoleInfo: TRoleInfo;
+  begin
+    RoleInfo := FRoleInfoHandle.GetRoleInfo;
+    FGameData^.RoleInfo := RoleInfo; // 重新设置人物信息
+    if (FGameData^.RoleInfo.MainJob <> mjKuangzhanshi) and
+      (FGameData^.RoleInfo.MainJob <> mjYuxuemoshen) and
+      (FGameData^.RoleInfo.MainJob <> mjSilingshushi) and
+      (FGameData^.RoleInfo.MainJob <> mjLinghunshougezhe)
+    then
+      warnning;
+    // 等级检测
+    if FGameData^.RoleInfo.Lv <= 50 then
+      warnning;
+    // 等级较大的重新设置地图等级
+    if FGameData^.RoleInfo.Lv >= 80 then
+      FGameData^.GameConfig.iMapLv := 3;
+  end;
 
 begin
   CloseGameWindows;
   SelectMemu;
   GotoSelectRole;
   GotoInGame;
-  FGameData^.RoleInfo := FRoleInfoHandle.GetRoleInfo; // 重新设置人物信息
-  if (FGameData^.RoleInfo.MainJob <> mjKuangzhanshi) and
-    (FGameData^.RoleInfo.MainJob <> mjYuxuemoshen) and
-    (FGameData^.RoleInfo.MainJob <> mjSilingshushi) and
-    (FGameData^.RoleInfo.MainJob <> mjLinghunshougezhe)
-  then
-    warnning;
-  // 等级检测
-  if FGameData^.RoleInfo.Lv <= 50 then
-    warnning;
-  // 等级较大的重新设置地图等级
-  if FGameData^.RoleInfo.Lv >= 80 then
-    FGameData^.GameConfig.iMapLv := 3;
+  UpdateRoleInfo;
 end;
 
 procedure TGame.DoDoorClosedTask;
@@ -459,11 +443,11 @@ begin
   New(FGameData);
   FObj := TObjFactory.CreateChargeObj;
   FObj.SetShowErrorMsg(0); // 关闭弹出
-  FGameData.Terminated := False;
-  FGameData.Obj := FObj;
+  FGameData^.Terminated := False;
+  FGameData^.Obj := FObj;
   SetGameData(FGameData);
   FMyObj := TObjFactory.CreateMyObj(FObj);
-  FGameData.MyObj := FMyObj;
+  FGameData^.MyObj := FMyObj;
   FGameConfigManager := GlobalContainer.Resolve<IGameConfigManager>;
 
   FObj.SetDict(0, sDictPath); // 设置字库
@@ -498,9 +482,6 @@ begin
   FGoods := GlobalContainer.Resolve<IGoods>;
   FGoods.SetGameData(aGameData);
 
-  FCheckTimeOut := GlobalContainer.Resolve<ICheckTimeOut>;
-  FCheckTimeOut.SetGameData(aGameData);
-
   FSkill := GlobalContainer.Resolve<ISkill>;
   FSkill.SetGameData(aGameData);
 end;
@@ -533,7 +514,7 @@ begin
     begin
       // 虚弱作业
       weakTask := TTask.Run(DoWeakTask);
-      if not weakTask.Wait(1000 * 60 * 8) then // 等待作业完成
+      if not weakTask.Wait(1000 * 60 * 10) then // 等待作业完成
       begin
         weakTask.Cancel;
         warnning;
@@ -592,7 +573,6 @@ begin
   FMan := nil;
   FMonster := nil;
   FGoods := nil;
-  FCheckTimeOut := nil;
   FSkill := nil;
 end;
 
@@ -615,7 +595,7 @@ begin
   try
     try
       CodeSite.Send('start to run');
-      CoInitializeEx(nil, 0); // 初始化Com库
+      // CoInitializeEx(nil, 0); // 初始化Com库
       FGameData^.GameConfig := FGameConfigManager.Config; // 读取配置文件
       FGameData.Terminated := False;
       FGameData^.Hwnd := BindGame; // 保存游戏窗口句柄
@@ -625,6 +605,7 @@ begin
       on E: EGame do
       begin
         Application.MessageBox(PWideChar(E.Message), '警告');
+        // warnning;
       end;
     end;
   finally
@@ -887,8 +868,7 @@ var
 begin
   Result := False;
   sPath := GetCurrentDir;
-  // if FGameConfigManager.Config.bAutoRunGuard then
-  // begin
+
   iRet := Obj.SetSimMode(2);
   if iRet <> 1 then
   begin
@@ -909,7 +889,7 @@ begin
     Application.Terminate;
   end;
   Result := true;
-  // end;
+
 end;
 
 procedure TGame.HpHandle;
@@ -924,8 +904,6 @@ begin
       0.9, 0, x, y);
     if iRet > -1 then
     begin
-      // FObj.KeyPressChar('1');
-      // Sleep(100);
       FObj.MoveTo(x, y);
       Sleep(100);
       FObj.RightClick;
@@ -1027,60 +1005,14 @@ begin
 
 end;
 
-{ TGameService }
-
-destructor TGameService.Destroy;
-begin
-  FGame.Free;
-  inherited;
-end;
-
-function TGameService.Guard: Boolean;
-begin
-  Result := FGame.Guard;
-end;
-
-procedure TGameService.Prepare;
-begin
-  FGame := TGame.Create;
-end;
-
-procedure TGameService.SetHandle(
-  const
-  aHandle:
-  THandle);
-begin
-  Application.Handle := aHandle;
-end;
-
-procedure TGameService.Start;
-begin
-  FGame.Start;
-end;
-
-procedure TGameService.Stop;
-begin
-  FGame.Stop;
-end;
-
-{ TGameVersion }
-
-function TGameVersion.GetVersion(var AVerInfo: TQVersion): Boolean;
-begin
-  Result := Version.Version.Release = AVerInfo.Version.Release;
-  AVerInfo := Version;
-end;
-
 initialization
 
 TObjConfig.ChargeFullPath := '.\Bin\Charge.dll'; // 设置插件路径
 RegisterGameClass;
-RegisterServices('Services/Game', [TGameService.Create(IGameService,
-  'GameService'), TGameVersion.Create(IQVersion, 'GameVersion')]);
 
 finalization
 
-UnregisterServices('Services/Game', ['GameService', 'GameVersion']);
+
 CleanupGlobalContainer;
 
 end.
