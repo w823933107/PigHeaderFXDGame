@@ -523,7 +523,7 @@ end;
 
 class destructor TGameBase.Destroy;
 begin
-  TGameBase.FLock.Free;
+   TGameBase.FLock.Free;
 end;
 
 function TGameBase.GetMyObj: TMyObj;
@@ -610,54 +610,50 @@ procedure TGameBase.Warnning;
 var
   task: ITask;
 begin
-  FLock.Acquire;
-  try
-    task := TTask.Run(
-      procedure
-      var
-        hPlay: THandle;
-        sw, swLong: TStopWatch;
+  FLock.Enter;
+  task := TTask.Run(
+    procedure
+    var
+      hPlay: THandle;
+      sw, swLong: TStopWatch;
+    begin
+      if GameData.GameConfig.bWarning then
       begin
-        if GameData.GameConfig.bWarning then
+        hPlay := Obj.Play('wife.mp3');
+        sw := TStopWatch.StartNew; // 计时
+        swLong := TStopWatch.StartNew;
+        while (not Terminated) do
         begin
-          hPlay := Obj.Play('wife.mp3');
-          sw := TStopWatch.StartNew; // 计时
-          swLong := TStopWatch.StartNew;
-          while (not Terminated) do
+          TTask.CurrentTask.CheckCanceled;
+          if swLong.ElapsedMilliseconds >= (1000 * 60 * 10) then
           begin
-            TTask.CurrentTask.CheckCanceled;
-            if swLong.ElapsedMilliseconds >= (1000 * 60 * 10) then
-            begin
-              Obj.Stop(hPlay); // 超出10分钟停止报警
-              sleep(100);
-              break;
-            end;
-            if sw.ElapsedMilliseconds >= (1000 * 60 * 3) then
-            begin
-              Obj.Stop(hPlay);
-              sleep(100);
-              hPlay := Obj.Play('wife.mp3');
-              sw.Reset; // 重置
-            end;
-            sleep(500);
+            Obj.Stop(hPlay); // 超出10分钟停止报警
+            sleep(100);
+            break;
           end;
-          sleep(200);
-          Obj.Stop(hPlay);
-        end
-        else
-        begin
-          while not Terminated do
+          if sw.ElapsedMilliseconds >= (1000 * 60 * 3) then
           begin
-            sleep(1000);
-            TTask.CurrentTask.CheckCanceled;
+            Obj.Stop(hPlay);
+            sleep(100);
+            hPlay := Obj.Play('wife.mp3');
+            sw.Reset; // 重置
           end;
+          sleep(500);
         end;
-      end);
-    task.Wait();
-  finally
-    FLock.Release;
-  end;
-
+        sleep(200);
+        Obj.Stop(hPlay);
+      end
+      else
+      begin
+        while not Terminated do
+        begin
+          sleep(1000);
+          TTask.CurrentTask.CheckCanceled;
+        end;
+      end;
+    end);
+  task.Wait();
+  FLock.Release;
 end;
 
 { TRectHelper }

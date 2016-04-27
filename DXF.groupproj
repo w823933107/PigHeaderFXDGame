@@ -9,6 +9,9 @@
         <Projects Include="艺馨.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="UpdataServer.dproj">
+            <Dependencies/>
+        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -35,14 +38,23 @@
     <Target Name="艺馨:Make">
         <MSBuild Projects="艺馨.dproj" Targets="Make"/>
     </Target>
+    <Target Name="UpdataServer">
+        <MSBuild Projects="UpdataServer.dproj"/>
+    </Target>
+    <Target Name="UpdataServer:Clean">
+        <MSBuild Projects="UpdataServer.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="UpdataServer:Make">
+        <MSBuild Projects="UpdataServer.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="pigheader;艺馨"/>
+        <CallTarget Targets="pigheader;艺馨;UpdataServer"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="pigheader:Clean;艺馨:Clean"/>
+        <CallTarget Targets="pigheader:Clean;艺馨:Clean;UpdataServer:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="pigheader:Make;艺馨:Make"/>
+        <CallTarget Targets="pigheader:Make;艺馨:Make;UpdataServer:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

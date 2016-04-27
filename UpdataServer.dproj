@@ -1,9 +1,9 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
-        <ProjectGuid>{D523BF83-20C7-43BA-B452-1692E83A1407}</ProjectGuid>
+        <ProjectGuid>{FCAC2745-84C2-474B-82B0-0423C02DB593}</ProjectGuid>
         <ProjectVersion>18.1</ProjectVersion>
         <FrameworkType>VCL</FrameworkType>
-        <MainSource>艺馨.dpr</MainSource>
+        <MainSource>UpdataServer.dpr</MainSource>
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">Release</Config>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
@@ -46,9 +46,10 @@
         <Base>true</Base>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
-        <SanitizedProjectName>艺馨</SanitizedProjectName>
-        <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;$(DCC_Namespace)</DCC_Namespace>
+        <Icns_MainIcns>$(BDS)\bin\delphi_PROJECTICNS.icns</Icns_MainIcns>
         <Icon_MainIcon>$(BDS)\bin\delphi_PROJECTICON.ico</Icon_MainIcon>
+        <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;$(DCC_Namespace)</DCC_Namespace>
+        <SanitizedProjectName>UpdataServer</SanitizedProjectName>
         <DCC_DcuOutput>.\$(Platform)\$(Config)</DCC_DcuOutput>
         <DCC_ExeOutput>.\$(Platform)\$(Config)</DCC_ExeOutput>
         <DCC_E>false</DCC_E>
@@ -58,15 +59,15 @@
         <DCC_K>false</DCC_K>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
-        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-        <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
-        <VerInfo_Locale>1033</VerInfo_Locale>
         <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
+        <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
+        <DCC_UsePackage>DBXSqliteDriver;dxSkinscxSchedulerPainterRS23;DBXDb2Driver;dxCoreRS23;vclactnband;iw14tmssedDX10;vclFireDAC;dxPSLnksRS23;dxPSdxLCLnkRS23;tethering;cxDataRS23;iw14tmsxlsdDX10;dxPSdxOCLnkRS23;FireDACADSDriver;dxTabbedMDIRS23;dxSkinBlackRS23;dxSkinLondonLiquidSkyRS23;JvPluginSystem;OrpheusDR;SysToolsDR;dxHttpIndyRequestRS23;cxSchedulerRS23;FireDACMSSQLDriver;NexusDB400db230;vcltouch;dxDBXServerModeRS23;dxPScxGridLnkRS23;vcldb;iw14tmsgriddDX10;svn;dxPScxCommonRS23;dxSkinMcSkinRS23;dxWizardControlRS23;mrAI;JvBands;dxSkinOffice2007BlueRS23;JvJans;dxBarRS23;cxSchedulerRibbonStyleEventEditorRS23;dxSkinOffice2013WhiteRS23;JvDotNetCtrls;dxPSTeeChartRS23;cxLibraryRS23;dxSkinVisualStudio2013LightRS23;vclib;VirtualShellToolsD;cxPivotGridChartRS23;dxSkinSummer2008RS23;dxPSdxDBOCLnkRS23;dxGDIPlusRS23;dxSkinDarkSideRS23;FireDACDBXDriver;dxSkinFoggyRS23;dxSkinSevenRS23;NexusDB400lg230;NexusDB400pv230;vclx;dxSkinOffice2010SilverRS23;dxdborRS23;NexusDB400sq230;RESTBackendComponents;dxLayoutControlRS23;AlphaDBDelphiXE10;dxPSPrVwRibbonRS23;VCLRESTComponents;dxSkinDevExpressStyleRS23;dxSkinWhiteprintRS23;vclie;bindengine;CloudService;RemObjects_Synapse_D23;JvHMI;FireDACMySQLDriver;dxSkinOffice2013DarkGrayRS23;IcsCommonD10SRun;DataSnapClient;dxPScxPCProdRS23;bindcompdbx;DBXSybaseASEDriver;IndyIPServer;dxSkinPumpkinRS23;IndySystem;dsnapcon;cxTreeListdxBarPopupMenuRS23;iw14tmsgriddedDX10;FireDACMSAccDriver;fmxFireDAC;FireDACInfxDriver;vclimg;dxSkinLilianRS23;Jcl;tmsexdXE9;IcsFmxD10SRun;dxBarDBNavRS23;dxFlowChartRS23;dxSkinOffice2016ColorfulRS23;DBXOdbcDriver;FireDACTDataDriver;FMXTee;soaprtl;DbxCommonDriver;AsyncProDR;dxSpreadSheetRS23;JvManagedThreads;CodeSiteLoggingPkg;dxSkinOffice2007PinkRS23;dxPSdxSpreadSheetLnkRS23;xmlrtl;soapmidas;DataSnapNativeClient;fmxobj;dxSkinHighContrastRS23;dxSkinSevenClassicRS23;rtl;dxSkinTheAsphaltWorldRS23;DbxClientDriver;dxSkinDevExpressDarkStyleRS23;DBXSybaseASADriver;dxNavBarRS23;dxSkinMetropolisDarkRS23;JvTimeFramework;JvSystem;RemObjects_WebBroker_D23;NexusDB400sr230;dxRichEditControlRS23;JvStdCtrls;RemObjects_Server_Synapse_D23;appanalytics;cxPivotGridRS23;LockBox3DR;IndyIPClient;dxPScxVGridLnkRS23;dxRibbonRS23;bindcompvcl;dxPScxTLLnkRS23;dxSkinsdxDLPainterRS23;dxSkinOffice2007SilverRS23;dxMapControlRS23;TeeUI;JvDocking;JvPascalInterpreter;VclSmp;dxPScxSchedulerLnkRS23;cxTreeListRS23;FireDACODBCDriver;JclVcl;DataSnapIndy10ServerTransport;dxPSRichEditControlLnkRS23;dxRibbonCustomizationFormRS23;mrMath;dxBarExtDBItemsRS23;mrImgUtils;DataSnapProviderClient;FireDACMongoDBDriver;PowerPDFDR;dxSpellCheckerRS23;dxSkiniMaginaryRS23;JvControls;dxSkinsdxBarPainterRS23;JvPrintPreview;dxSkinCoffeeRS23;DataSnapServerMidas;RESTComponents;DBXInterBaseDriver;dxADOServerModeRS23;SysToolsDBDR;thundax.ai;emsclientfiredac;DataSnapFireDAC;svnui;dxmdsRS23;dxPSDBTeeChartRS23;dxdbtrRS23;dxSkinLiquidSkyRS23;dxSkinSpringTimeRS23;JvGlobus;dxPSCoreRS23;dxSkinscxPCPainterRS23;DBXMSSQLDriver;iw14tmsdDX10;dxSkinXmas2008BlueRS23;JvMM;DatasnapConnectorsFreePascal;PngComponentsD;NexusDB400sd230;bindcompfmx;JvNet;DBXOracleDriver;dxSkinSilverRS23;dxSkinValentineRS23;inetdb;JvAppFrm;EssentialsDR;VirtualTreesDR;FmxTeeUI;OmniThreadLibraryRuntimeXE8;AbbreviaVCLD;FireDACIBDriver;fmx;fmxdae;EasyListviewD;NexusDB400se230;dxServerModeRS23;dxBarExtItemsRS23;DIHtmlParser_DX10S;dxPsPrVwAdvRS23;dxSkinOffice2010BlackRS23;cxPageControlRS23;dxSkinStardustRS23;cxSchedulerGridRS23;JvWizards;dbexpress;IndyCore;OnGuardDR;OrpheusDBDR;dxSkinSharpPlusRS23;JvPageComps;dsnap;DataSnapCommon;emsclient;AggPasRun;FireDACCommon;dxSkinOffice2010BlueRS23;JvDB;dxSkinVS2010RS23;dxSkinMetropolisRS23;DataSnapConnectors;cxVerticalGridRS23;soapserver;dxSkinCaramelRS23;dxTileControlRS23;Intraweb_14_D10;cxGridRS23;JclDeveloperTools;CnPack_D10S;FireDACOracleDriver;DBXMySQLDriver;NexusDB400ll230;acntDelphiXE10_R;JvCmp;DBXFirebirdDriver;FireDACCommonDriver;inet;UIRibbonPackageDR;IndyIPCommon;JvCustom;dxSkinDarkRoomRS23;dxDockingRS23;vcl;tmsxlsdXE9;dxSkinOffice2007GreenRS23;dxPScxExtCommonRS23;JvXPCtrls;dxSkinsCoreRS23;FireDACDb2Driver;dxThemeRS23;dxSkinsdxRibbonPainterRS23;tmswizdXE9;dxSkinVisualStudio2013BlueRS23;dxSkinMoneyTwinsRS23;dxPSdxFCLnkRS23;dxtrmdRS23;TeeDB;FireDAC;cxSchedulerTreeBrowserRS23;AutoUpgraderProD10s;JvCore;dxFireDACServerModeRS23;dxSkinBlueRS23;JvCrypt;FireDACSqliteDriver;FireDACPgDriver;ibmonitor;FireDACASADriver;ChromeTabs_R;cxEditorsRS23;dxSkinGlassOceansRS23;JvDlgs;RemObjects_Indy_D23;dxSkinsdxNavBarPainterRS23;dxGaugeControlRS23;ibxpress;Tee;cxPivotGridOLAPRS23;DataSnapServer;ibxbindings;dxSkinSharpRS23;JvRuntimeDesign;CodeSiteDBToolsPkg;vclwinx;FireDACDSDriver;dxSkinBlueprintRS23;dxSkinOffice2007BlackRS23;CustomIPTransport;vcldsnap;DOSCommandDR;dxSkinOffice2013LightGrayRS23;bindcomp;paxcomp_D10;DBXInformixDriver;dxPSdxGaugeControlLnkRS23;EurekaLogCore;dxPScxPivotGridLnkRS23;dxorgcRS23;dxPSdxDBTVLnkRS23;vclribbon;dbxcds;IcsVclD10SRun;adortl;MPCommonLibD;dxComnRS23;dsnapxml;dbrtl;inetdbxpress;IndyProtocols;cxExportRS23;dxSkinOffice2016DarkRS23;OnGuardFMXDR;dxSkinVisualStudio2013DarkRS23;JclContainers;RemObjects_Server_Indy_D23;tmsdXE9;fmxase;$(DCC_UsePackage)</DCC_UsePackage>
         <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
-        <DCC_UsePackage>DBXSqliteDriver;dxSkinscxSchedulerPainterRS23;DBXDb2Driver;dxCoreRS23;vclactnband;iw14tmssedDX10;vclFireDAC;dxPSLnksRS23;dxPSdxLCLnkRS23;tethering;cxDataRS23;iw14tmsxlsdDX10;dxPSdxOCLnkRS23;FireDACADSDriver;dxTabbedMDIRS23;dxSkinBlackRS23;dxSkinLondonLiquidSkyRS23;JvPluginSystem;OrpheusDR;SysToolsDR;dxHttpIndyRequestRS23;cxSchedulerRS23;FireDACMSSQLDriver;NexusDB400db230;vcltouch;dxDBXServerModeRS23;dxPScxGridLnkRS23;vcldb;iw14tmsgriddDX10;svn;dxPScxCommonRS23;dxSkinMcSkinRS23;dxWizardControlRS23;mrAI;JvBands;dxSkinOffice2007BlueRS23;JvJans;dxBarRS23;cxSchedulerRibbonStyleEventEditorRS23;dxSkinOffice2013WhiteRS23;JvDotNetCtrls;dxPSTeeChartRS23;cxLibraryRS23;dxSkinVisualStudio2013LightRS23;vclib;VirtualShellToolsD;cxPivotGridChartRS23;dxSkinSummer2008RS23;dxPSdxDBOCLnkRS23;dxGDIPlusRS23;dxSkinDarkSideRS23;FireDACDBXDriver;dxSkinFoggyRS23;dxSkinSevenRS23;NexusDB400lg230;NexusDB400pv230;vclx;dxSkinOffice2010SilverRS23;dxdborRS23;NexusDB400sq230;RESTBackendComponents;dxLayoutControlRS23;AlphaDBDelphiXE10;dxPSPrVwRibbonRS23;VCLRESTComponents;dxSkinDevExpressStyleRS23;dxSkinWhiteprintRS23;vclie;bindengine;CloudService;RemObjects_Synapse_D23;JvHMI;FireDACMySQLDriver;dxSkinOffice2013DarkGrayRS23;IcsCommonD10SRun;DataSnapClient;dxPScxPCProdRS23;bindcompdbx;DBXSybaseASEDriver;IndyIPServer;dxSkinPumpkinRS23;IndySystem;dsnapcon;cxTreeListdxBarPopupMenuRS23;iw14tmsgriddedDX10;FireDACMSAccDriver;fmxFireDAC;FireDACInfxDriver;vclimg;dxSkinLilianRS23;Jcl;tmsexdXE9;IcsFmxD10SRun;dxBarDBNavRS23;dxFlowChartRS23;dxSkinOffice2016ColorfulRS23;DBXOdbcDriver;FireDACTDataDriver;FMXTee;soaprtl;DbxCommonDriver;CodeSiteLoggingPkg;AsyncProDR;dxSpreadSheetRS23;JvManagedThreads;dxSkinOffice2007PinkRS23;dxPSdxSpreadSheetLnkRS23;xmlrtl;soapmidas;DataSnapNativeClient;fmxobj;dxSkinHighContrastRS23;dxSkinSevenClassicRS23;rtl;dxSkinTheAsphaltWorldRS23;DbxClientDriver;dxSkinDevExpressDarkStyleRS23;DBXSybaseASADriver;dxNavBarRS23;dxSkinMetropolisDarkRS23;JvTimeFramework;JvSystem;RemObjects_WebBroker_D23;NexusDB400sr230;dxRichEditControlRS23;JvStdCtrls;RemObjects_Server_Synapse_D23;appanalytics;cxPivotGridRS23;LockBox3DR;IndyIPClient;dxPScxVGridLnkRS23;dxRibbonRS23;bindcompvcl;dxPScxTLLnkRS23;dxSkinsdxDLPainterRS23;dxSkinOffice2007SilverRS23;dxMapControlRS23;TeeUI;JvDocking;JvPascalInterpreter;VclSmp;dxPScxSchedulerLnkRS23;cxTreeListRS23;FireDACODBCDriver;JclVcl;DataSnapIndy10ServerTransport;dxPSRichEditControlLnkRS23;dxRibbonCustomizationFormRS23;mrMath;dxBarExtDBItemsRS23;mrImgUtils;DataSnapProviderClient;FireDACMongoDBDriver;PowerPDFDR;dxSpellCheckerRS23;dxSkiniMaginaryRS23;JvControls;dxSkinsdxBarPainterRS23;JvPrintPreview;dxSkinCoffeeRS23;DataSnapServerMidas;RESTComponents;DBXInterBaseDriver;dxADOServerModeRS23;SysToolsDBDR;thundax.ai;emsclientfiredac;DataSnapFireDAC;svnui;dxmdsRS23;dxPSDBTeeChartRS23;dxdbtrRS23;dxSkinLiquidSkyRS23;dxSkinSpringTimeRS23;JvGlobus;dxPSCoreRS23;dxSkinscxPCPainterRS23;DBXMSSQLDriver;iw14tmsdDX10;dxSkinXmas2008BlueRS23;JvMM;DatasnapConnectorsFreePascal;PngComponentsD;NexusDB400sd230;bindcompfmx;JvNet;DBXOracleDriver;dxSkinSilverRS23;dxSkinValentineRS23;inetdb;JvAppFrm;EssentialsDR;VirtualTreesDR;FmxTeeUI;OmniThreadLibraryRuntimeXE8;AbbreviaVCLD;FireDACIBDriver;fmx;fmxdae;EasyListviewD;NexusDB400se230;dxServerModeRS23;dxBarExtItemsRS23;DIHtmlParser_DX10S;dxPsPrVwAdvRS23;dxSkinOffice2010BlackRS23;cxPageControlRS23;dxSkinStardustRS23;cxSchedulerGridRS23;JvWizards;dbexpress;IndyCore;OnGuardDR;OrpheusDBDR;dxSkinSharpPlusRS23;JvPageComps;dsnap;DataSnapCommon;emsclient;AggPasRun;FireDACCommon;dxSkinOffice2010BlueRS23;JvDB;dxSkinVS2010RS23;dxSkinMetropolisRS23;DataSnapConnectors;cxVerticalGridRS23;soapserver;dxSkinCaramelRS23;dxTileControlRS23;Intraweb_14_D10;cxGridRS23;JclDeveloperTools;CnPack_D10S;FireDACOracleDriver;DBXMySQLDriver;NexusDB400ll230;acntDelphiXE10_R;JvCmp;DBXFirebirdDriver;FireDACCommonDriver;inet;UIRibbonPackageDR;IndyIPCommon;JvCustom;dxSkinDarkRoomRS23;dxDockingRS23;vcl;tmsxlsdXE9;dxSkinOffice2007GreenRS23;dxPScxExtCommonRS23;JvXPCtrls;dxSkinsCoreRS23;FireDACDb2Driver;dxThemeRS23;dxSkinsdxRibbonPainterRS23;tmswizdXE9;dxSkinVisualStudio2013BlueRS23;dxSkinMoneyTwinsRS23;dxPSdxFCLnkRS23;dxtrmdRS23;TeeDB;FireDAC;cxSchedulerTreeBrowserRS23;AutoUpgraderProD10s;JvCore;dxFireDACServerModeRS23;dxSkinBlueRS23;JvCrypt;FireDACSqliteDriver;FireDACPgDriver;ibmonitor;FireDACASADriver;ChromeTabs_R;cxEditorsRS23;dxSkinGlassOceansRS23;JvDlgs;RemObjects_Indy_D23;dxSkinsdxNavBarPainterRS23;dxGaugeControlRS23;ibxpress;Tee;CodeSiteDBToolsPkg;DataSnapServer;ibxbindings;cxPivotGridOLAPRS23;dxSkinSharpRS23;JvRuntimeDesign;vclwinx;FireDACDSDriver;dxSkinBlueprintRS23;dxSkinOffice2007BlackRS23;CustomIPTransport;vcldsnap;DOSCommandDR;dxSkinOffice2013LightGrayRS23;bindcomp;paxcomp_D10;DBXInformixDriver;dxPSdxGaugeControlLnkRS23;EurekaLogCore;dxPScxPivotGridLnkRS23;dxorgcRS23;dxPSdxDBTVLnkRS23;vclribbon;dbxcds;IcsVclD10SRun;adortl;MPCommonLibD;dxComnRS23;dsnapxml;dbrtl;inetdbxpress;IndyProtocols;cxExportRS23;dxSkinOffice2016DarkRS23;OnGuardFMXDR;dxSkinVisualStudio2013DarkRS23;JclContainers;RemObjects_Server_Indy_D23;tmsdXE9;fmxase;$(DCC_UsePackage)</DCC_UsePackage>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <VerInfo_Locale>1033</VerInfo_Locale>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win64)'!=''">
-        <DCC_UsePackage>DBXSqliteDriver;dxSkinscxSchedulerPainterRS23;DBXDb2Driver;dxCoreRS23;vclactnband;vclFireDAC;dxPSLnksRS23;dxPSdxLCLnkRS23;tethering;cxDataRS23;dxPSdxOCLnkRS23;FireDACADSDriver;dxTabbedMDIRS23;dxSkinBlackRS23;dxSkinLondonLiquidSkyRS23;OrpheusDR;SysToolsDR;dxHttpIndyRequestRS23;cxSchedulerRS23;FireDACMSSQLDriver;NexusDB400db230;vcltouch;dxDBXServerModeRS23;dxPScxGridLnkRS23;vcldb;dxPScxCommonRS23;dxSkinMcSkinRS23;dxWizardControlRS23;dxSkinOffice2007BlueRS23;dxBarRS23;cxSchedulerRibbonStyleEventEditorRS23;dxSkinOffice2013WhiteRS23;dxPSTeeChartRS23;cxLibraryRS23;dxSkinVisualStudio2013LightRS23;vclib;VirtualShellToolsD;cxPivotGridChartRS23;dxSkinSummer2008RS23;dxPSdxDBOCLnkRS23;dxGDIPlusRS23;dxSkinDarkSideRS23;FireDACDBXDriver;dxSkinFoggyRS23;dxSkinSevenRS23;NexusDB400lg230;NexusDB400pv230;vclx;dxSkinOffice2010SilverRS23;dxdborRS23;NexusDB400sq230;RESTBackendComponents;dxLayoutControlRS23;dxPSPrVwRibbonRS23;VCLRESTComponents;dxSkinDevExpressStyleRS23;dxSkinWhiteprintRS23;vclie;bindengine;CloudService;RemObjects_Synapse_D23;FireDACMySQLDriver;dxSkinOffice2013DarkGrayRS23;IcsCommonD10SRun;DataSnapClient;dxPScxPCProdRS23;bindcompdbx;DBXSybaseASEDriver;IndyIPServer;dxSkinPumpkinRS23;IndySystem;dsnapcon;cxTreeListdxBarPopupMenuRS23;FireDACMSAccDriver;fmxFireDAC;FireDACInfxDriver;vclimg;dxSkinLilianRS23;tmsexdXE9;IcsFmxD10SRun;dxBarDBNavRS23;dxFlowChartRS23;dxSkinOffice2016ColorfulRS23;DBXOdbcDriver;FireDACTDataDriver;FMXTee;soaprtl;DbxCommonDriver;AsyncProDR;dxSpreadSheetRS23;dxSkinOffice2007PinkRS23;dxPSdxSpreadSheetLnkRS23;xmlrtl;soapmidas;DataSnapNativeClient;fmxobj;dxSkinHighContrastRS23;dxSkinSevenClassicRS23;rtl;dxSkinTheAsphaltWorldRS23;DbxClientDriver;dxSkinDevExpressDarkStyleRS23;DBXSybaseASADriver;dxNavBarRS23;dxSkinMetropolisDarkRS23;RemObjects_WebBroker_D23;NexusDB400sr230;dxRichEditControlRS23;RemObjects_Server_Synapse_D23;appanalytics;cxPivotGridRS23;LockBox3DR;IndyIPClient;dxPScxVGridLnkRS23;dxRibbonRS23;bindcompvcl;dxPScxTLLnkRS23;dxSkinsdxDLPainterRS23;dxSkinOffice2007SilverRS23;dxMapControlRS23;TeeUI;VclSmp;dxPScxSchedulerLnkRS23;cxTreeListRS23;FireDACODBCDriver;DataSnapIndy10ServerTransport;dxPSRichEditControlLnkRS23;dxRibbonCustomizationFormRS23;dxBarExtDBItemsRS23;DataSnapProviderClient;FireDACMongoDBDriver;PowerPDFDR;dxSpellCheckerRS23;dxSkiniMaginaryRS23;dxSkinsdxBarPainterRS23;dxSkinCoffeeRS23;DataSnapServerMidas;RESTComponents;DBXInterBaseDriver;dxADOServerModeRS23;SysToolsDBDR;emsclientfiredac;DataSnapFireDAC;dxmdsRS23;dxPSDBTeeChartRS23;dxdbtrRS23;dxSkinLiquidSkyRS23;dxSkinSpringTimeRS23;dxPSCoreRS23;dxSkinscxPCPainterRS23;DBXMSSQLDriver;dxSkinXmas2008BlueRS23;DatasnapConnectorsFreePascal;PngComponentsD;NexusDB400sd230;bindcompfmx;DBXOracleDriver;dxSkinSilverRS23;dxSkinValentineRS23;inetdb;EssentialsDR;VirtualTreesDR;FmxTeeUI;AbbreviaVCLD;FireDACIBDriver;fmx;fmxdae;EasyListviewD;NexusDB400se230;dxServerModeRS23;dxBarExtItemsRS23;dxPsPrVwAdvRS23;dxSkinOffice2010BlackRS23;cxPageControlRS23;dxSkinStardustRS23;cxSchedulerGridRS23;dbexpress;IndyCore;OnGuardDR;OrpheusDBDR;dxSkinSharpPlusRS23;dsnap;DataSnapCommon;emsclient;FireDACCommon;dxSkinOffice2010BlueRS23;dxSkinVS2010RS23;dxSkinMetropolisRS23;DataSnapConnectors;cxVerticalGridRS23;soapserver;dxSkinCaramelRS23;dxTileControlRS23;cxGridRS23;FireDACOracleDriver;DBXMySQLDriver;NexusDB400ll230;DBXFirebirdDriver;FireDACCommonDriver;inet;UIRibbonPackageDR;IndyIPCommon;dxSkinDarkRoomRS23;dxDockingRS23;vcl;dxSkinOffice2007GreenRS23;dxPScxExtCommonRS23;dxSkinsCoreRS23;FireDACDb2Driver;dxThemeRS23;dxSkinsdxRibbonPainterRS23;dxSkinVisualStudio2013BlueRS23;dxSkinMoneyTwinsRS23;dxPSdxFCLnkRS23;dxtrmdRS23;TeeDB;FireDAC;cxSchedulerTreeBrowserRS23;dxFireDACServerModeRS23;dxSkinBlueRS23;FireDACSqliteDriver;FireDACPgDriver;ibmonitor;FireDACASADriver;cxEditorsRS23;dxSkinGlassOceansRS23;RemObjects_Indy_D23;dxSkinsdxNavBarPainterRS23;dxGaugeControlRS23;ibxpress;Tee;DataSnapServer;ibxbindings;cxPivotGridOLAPRS23;dxSkinSharpRS23;vclwinx;FireDACDSDriver;dxSkinBlueprintRS23;dxSkinOffice2007BlackRS23;CustomIPTransport;vcldsnap;DOSCommandDR;dxSkinOffice2013LightGrayRS23;bindcomp;DBXInformixDriver;dxPSdxGaugeControlLnkRS23;dxPScxPivotGridLnkRS23;dxorgcRS23;dxPSdxDBTVLnkRS23;vclribbon;dbxcds;IcsVclD10SRun;adortl;MPCommonLibD;dxComnRS23;dsnapxml;dbrtl;inetdbxpress;IndyProtocols;cxExportRS23;dxSkinOffice2016DarkRS23;OnGuardFMXDR;dxSkinVisualStudio2013DarkRS23;RemObjects_Server_Indy_D23;tmsdXE9;fmxase;$(DCC_UsePackage)</DCC_UsePackage>
+        <DCC_UsePackage>DBXSqliteDriver;dxSkinscxSchedulerPainterRS23;DBXDb2Driver;dxCoreRS23;vclactnband;vclFireDAC;dxPSLnksRS23;dxPSdxLCLnkRS23;tethering;cxDataRS23;dxPSdxOCLnkRS23;FireDACADSDriver;dxTabbedMDIRS23;dxSkinBlackRS23;dxSkinLondonLiquidSkyRS23;OrpheusDR;SysToolsDR;dxHttpIndyRequestRS23;cxSchedulerRS23;FireDACMSSQLDriver;NexusDB400db230;vcltouch;dxDBXServerModeRS23;dxPScxGridLnkRS23;vcldb;dxPScxCommonRS23;dxSkinMcSkinRS23;dxWizardControlRS23;dxSkinOffice2007BlueRS23;dxBarRS23;cxSchedulerRibbonStyleEventEditorRS23;dxSkinOffice2013WhiteRS23;dxPSTeeChartRS23;cxLibraryRS23;dxSkinVisualStudio2013LightRS23;vclib;VirtualShellToolsD;cxPivotGridChartRS23;dxSkinSummer2008RS23;dxPSdxDBOCLnkRS23;dxGDIPlusRS23;dxSkinDarkSideRS23;FireDACDBXDriver;dxSkinFoggyRS23;dxSkinSevenRS23;NexusDB400lg230;NexusDB400pv230;vclx;dxSkinOffice2010SilverRS23;dxdborRS23;NexusDB400sq230;RESTBackendComponents;dxLayoutControlRS23;dxPSPrVwRibbonRS23;VCLRESTComponents;dxSkinDevExpressStyleRS23;dxSkinWhiteprintRS23;vclie;bindengine;CloudService;RemObjects_Synapse_D23;FireDACMySQLDriver;dxSkinOffice2013DarkGrayRS23;IcsCommonD10SRun;DataSnapClient;dxPScxPCProdRS23;bindcompdbx;DBXSybaseASEDriver;IndyIPServer;dxSkinPumpkinRS23;IndySystem;dsnapcon;cxTreeListdxBarPopupMenuRS23;FireDACMSAccDriver;fmxFireDAC;FireDACInfxDriver;vclimg;dxSkinLilianRS23;tmsexdXE9;IcsFmxD10SRun;dxBarDBNavRS23;dxFlowChartRS23;dxSkinOffice2016ColorfulRS23;DBXOdbcDriver;FireDACTDataDriver;FMXTee;soaprtl;DbxCommonDriver;AsyncProDR;dxSpreadSheetRS23;dxSkinOffice2007PinkRS23;dxPSdxSpreadSheetLnkRS23;xmlrtl;soapmidas;DataSnapNativeClient;fmxobj;dxSkinHighContrastRS23;dxSkinSevenClassicRS23;rtl;dxSkinTheAsphaltWorldRS23;DbxClientDriver;dxSkinDevExpressDarkStyleRS23;DBXSybaseASADriver;dxNavBarRS23;dxSkinMetropolisDarkRS23;RemObjects_WebBroker_D23;NexusDB400sr230;dxRichEditControlRS23;RemObjects_Server_Synapse_D23;appanalytics;cxPivotGridRS23;LockBox3DR;IndyIPClient;dxPScxVGridLnkRS23;dxRibbonRS23;bindcompvcl;dxPScxTLLnkRS23;dxSkinsdxDLPainterRS23;dxSkinOffice2007SilverRS23;dxMapControlRS23;TeeUI;VclSmp;dxPScxSchedulerLnkRS23;cxTreeListRS23;FireDACODBCDriver;DataSnapIndy10ServerTransport;dxPSRichEditControlLnkRS23;dxRibbonCustomizationFormRS23;dxBarExtDBItemsRS23;DataSnapProviderClient;FireDACMongoDBDriver;PowerPDFDR;dxSpellCheckerRS23;dxSkiniMaginaryRS23;dxSkinsdxBarPainterRS23;dxSkinCoffeeRS23;DataSnapServerMidas;RESTComponents;DBXInterBaseDriver;dxADOServerModeRS23;SysToolsDBDR;emsclientfiredac;DataSnapFireDAC;dxmdsRS23;dxPSDBTeeChartRS23;dxdbtrRS23;dxSkinLiquidSkyRS23;dxSkinSpringTimeRS23;dxPSCoreRS23;dxSkinscxPCPainterRS23;DBXMSSQLDriver;dxSkinXmas2008BlueRS23;DatasnapConnectorsFreePascal;PngComponentsD;NexusDB400sd230;bindcompfmx;DBXOracleDriver;dxSkinSilverRS23;dxSkinValentineRS23;inetdb;EssentialsDR;VirtualTreesDR;FmxTeeUI;AbbreviaVCLD;FireDACIBDriver;fmx;fmxdae;EasyListviewD;NexusDB400se230;dxServerModeRS23;dxBarExtItemsRS23;dxPsPrVwAdvRS23;dxSkinOffice2010BlackRS23;cxPageControlRS23;dxSkinStardustRS23;cxSchedulerGridRS23;dbexpress;IndyCore;OnGuardDR;OrpheusDBDR;dxSkinSharpPlusRS23;dsnap;DataSnapCommon;emsclient;FireDACCommon;dxSkinOffice2010BlueRS23;dxSkinVS2010RS23;dxSkinMetropolisRS23;DataSnapConnectors;cxVerticalGridRS23;soapserver;dxSkinCaramelRS23;dxTileControlRS23;cxGridRS23;FireDACOracleDriver;DBXMySQLDriver;NexusDB400ll230;DBXFirebirdDriver;FireDACCommonDriver;inet;UIRibbonPackageDR;IndyIPCommon;dxSkinDarkRoomRS23;dxDockingRS23;vcl;dxSkinOffice2007GreenRS23;dxPScxExtCommonRS23;dxSkinsCoreRS23;FireDACDb2Driver;dxThemeRS23;dxSkinsdxRibbonPainterRS23;dxSkinVisualStudio2013BlueRS23;dxSkinMoneyTwinsRS23;dxPSdxFCLnkRS23;dxtrmdRS23;TeeDB;FireDAC;cxSchedulerTreeBrowserRS23;dxFireDACServerModeRS23;dxSkinBlueRS23;FireDACSqliteDriver;FireDACPgDriver;ibmonitor;FireDACASADriver;cxEditorsRS23;dxSkinGlassOceansRS23;RemObjects_Indy_D23;dxSkinsdxNavBarPainterRS23;dxGaugeControlRS23;ibxpress;Tee;cxPivotGridOLAPRS23;DataSnapServer;ibxbindings;dxSkinSharpRS23;vclwinx;FireDACDSDriver;dxSkinBlueprintRS23;dxSkinOffice2007BlackRS23;CustomIPTransport;vcldsnap;DOSCommandDR;dxSkinOffice2013LightGrayRS23;bindcomp;DBXInformixDriver;dxPSdxGaugeControlLnkRS23;dxPScxPivotGridLnkRS23;dxorgcRS23;dxPSdxDBTVLnkRS23;vclribbon;dbxcds;IcsVclD10SRun;adortl;MPCommonLibD;dxComnRS23;dsnapxml;dbrtl;inetdbxpress;IndyProtocols;cxExportRS23;dxSkinOffice2016DarkRS23;OnGuardFMXDR;dxSkinVisualStudio2013DarkRS23;RemObjects_Server_Indy_D23;tmsdXE9;fmxase;$(DCC_UsePackage)</DCC_UsePackage>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1)'!=''">
         <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
@@ -77,8 +78,8 @@
         <DCC_RemoteDebug>true</DCC_RemoteDebug>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
-        <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <AppEnableHighDPI>true</AppEnableHighDPI>
+        <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <DCC_RemoteDebug>false</DCC_RemoteDebug>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
@@ -88,24 +89,27 @@
         <DCC_DebugInformation>0</DCC_DebugInformation>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
-        <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <AppEnableHighDPI>true</AppEnableHighDPI>
+        <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
-        <DCCReference Include="YixinForm.pas">
-            <Form>Form3</Form>
+        <DCCReference Include="UpdataServerForm.pas">
+            <Form>Form1</Form>
             <FormType>dfm</FormType>
         </DCCReference>
-        <DCCReference Include="ClientClassesUnit1.pas"/>
-        <DCCReference Include="ClientModuleUnit1.pas">
-            <Form>ClientModule1</Form>
+        <DCCReference Include="ServerMethodsUnit1.pas">
+            <Form>ServerMethods1</Form>
+            <FormType>dfm</FormType>
+            <DesignClass>TDSServerModule</DesignClass>
+        </DCCReference>
+        <DCCReference Include="ServerContainerUnit1.pas">
+            <Form>ServerContainer1</Form>
             <FormType>dfm</FormType>
             <DesignClass>TDataModule</DesignClass>
         </DCCReference>
-        <DCCReference Include="ServiceFunc.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
@@ -124,28 +128,37 @@
         <BorlandProject>
             <Delphi.Personality>
                 <Source>
-                    <Source Name="MainSource">艺馨.dpr</Source>
+                    <Source Name="MainSource">UpdataServer.dpr</Source>
                 </Source>
             </Delphi.Personality>
             <Deployment Version="2">
-                <DeployFile LocalName="Win32\Debug\艺馨.exe" Configuration="Debug" Class="ProjectOutput">
+                <DeployFile LocalName="Win32\Debug\UpdataServer.exe" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win32">
-                        <RemoteName>艺馨.exe</RemoteName>
+                        <RemoteName>UpdataServer.exe</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="Win32\Release\艺馨.exe" Configuration="Release" Class="ProjectOutput">
+                <DeployClass Name="DependencyModule">
                     <Platform Name="Win32">
-                        <RemoteName>艺馨.exe</RemoteName>
-                        <Overwrite>true</Overwrite>
+                        <Operation>0</Operation>
+                        <Extensions>.dll;.bpl</Extensions>
                     </Platform>
-                </DeployFile>
-                <DeployClass Name="ProjectiOSDeviceResourceRules">
                     <Platform Name="iOSDevice64">
                         <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
+                    </Platform>
+                    <Platform Name="OSX32">
+                        <RemoteDir>Contents\MacOS</RemoteDir>
+                        <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
                     </Platform>
                     <Platform Name="iOSDevice32">
                         <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
+                    </Platform>
+                    <Platform Name="iOSSimulator">
+                        <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
                     </Platform>
                 </DeployClass>
                 <DeployClass Name="ProjectOSXResource">
@@ -499,27 +512,12 @@
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
-                <DeployClass Name="DependencyModule">
-                    <Platform Name="Win32">
-                        <Operation>0</Operation>
-                        <Extensions>.dll;.bpl</Extensions>
-                    </Platform>
+                <DeployClass Name="ProjectiOSDeviceResourceRules">
                     <Platform Name="iOSDevice64">
                         <Operation>1</Operation>
-                        <Extensions>.dylib</Extensions>
-                    </Platform>
-                    <Platform Name="OSX32">
-                        <RemoteDir>Contents\MacOS</RemoteDir>
-                        <Operation>1</Operation>
-                        <Extensions>.dylib</Extensions>
                     </Platform>
                     <Platform Name="iOSDevice32">
                         <Operation>1</Operation>
-                        <Extensions>.dylib</Extensions>
-                    </Platform>
-                    <Platform Name="iOSSimulator">
-                        <Operation>1</Operation>
-                        <Extensions>.dylib</Extensions>
                     </Platform>
                 </DeployClass>
                 <ProjectRoot Platform="iOSDevice64" Name="$(PROJECTNAME).app"/>
@@ -534,10 +532,6 @@
                 <Platform value="Win32">True</Platform>
                 <Platform value="Win64">False</Platform>
             </Platforms>
-            <DataSnapProxyLookup>
-                <ServiceFunc>{1E2DED18-D0E4-4D28-88C0-6083E99240E8}</ServiceFunc>
-                <ClientClassesUnit1>{76A6784C-16AB-4465-9123-066224A53CC8}</ClientClassesUnit1>
-            </DataSnapProxyLookup>
         </BorlandProject>
         <ProjectFileVersion>12</ProjectFileVersion>
     </ProjectExtensions>

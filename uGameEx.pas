@@ -79,6 +79,14 @@ type
     procedure Stop; // 停止
   end;
 
+  TGameVersion = class(TQService, IQService)
+  const
+    Version: TQVersion = (Version: (Major: 0; Minor: 0; Release: 1; Build: 0);
+      Company: ''; Name: ''; Description: ''; FileName: '');
+  public
+    function GetVersion(var AVerInfo: TQVersion): Boolean; stdcall;
+  end;
+
 implementation
 
 
@@ -538,7 +546,7 @@ begin
       begin
         // 开始换角色作业,并等待完成
         ChangeRoleTask := TTask.Run(DoChangeRoleTask);
-        if not ChangeRoleTask.Wait(1000 * 60 * 2) then
+        if not ChangeRoleTask.Wait(1000 * 60 * 4) then
         begin
           ChangeRoleTask.Cancel;
           warnning;
@@ -548,7 +556,7 @@ begin
       begin
         // 开始进图作业,并等待完成
         GotoInMapTask := TTask.Run(DoGoToInMapTask);
-        if not GotoInMapTask.Wait(1000 * 60 * 2) then
+        if not GotoInMapTask.Wait(1000 * 60 * 4) then
         begin
           GotoInMapTask.Cancel;
           warnning;
@@ -853,7 +861,7 @@ begin
     if FDoor.IsOpen then
     begin
       OpenedTask := TTask.Run(DoDoorOpenedTask);
-      if not OpenedTask.Wait(1000 * 60 * 2) then
+      if not OpenedTask.Wait(1000 * 60 * 3) then
       begin
         OpenedTask.Cancel;
         warnning;
@@ -1055,16 +1063,24 @@ begin
   FGame.Stop;
 end;
 
+{ TGameVersion }
+
+function TGameVersion.GetVersion(var AVerInfo: TQVersion): Boolean;
+begin
+  Result := Version.Version.Release = AVerInfo.Version.Release;
+  AVerInfo := Version;
+end;
+
 initialization
 
 TObjConfig.ChargeFullPath := '.\Bin\Charge.dll'; // 设置插件路径
 RegisterGameClass;
 RegisterServices('Services/Game', [TGameService.Create(IGameService,
-  'GameService')]);
+  'GameService'), TGameVersion.Create(IQVersion, 'GameVersion')]);
 
 finalization
 
-UnregisterServices('Services/Game', ['GameService']);
+UnregisterServices('Services/Game', ['GameService', 'GameVersion']);
 CleanupGlobalContainer;
 
 end.

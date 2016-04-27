@@ -56,6 +56,8 @@ implementation
 {$R *.dfm}
 
 
+uses ClientModuleUnit1;
+
 procedure TForm3.btn1Click(Sender: TObject);
 begin
   ConfigForm.Show;
@@ -83,11 +85,42 @@ begin
 end;
 
 procedure TForm3.FormCreate(Sender: TObject);
+  procedure UpdataModule;
+  var
+    Version: TQVersion;
+    releaseVersion: Byte;
+    stream: TBytesStream;
+    FileBytes: TBytes;
+    aVer: IQVersion;
+  begin
+    // ClientModule1.SQLConnection1.Open;
+    aVer := (PluginsManager.ById(IQVersion) as IQVersion);
+    aVer.GetVersion(Version);
+//    if not ClientModule1.ServerMethods1Client.GetReleaseVersion(releaseVersion)
+//    then
+//    begin
+//      PluginsManager.Stop;
+//      ClientModule1.ServerMethods1Client.GetDllFile.ToBytes(FileBytes, 0);
+//      DeleteFile('pigheader.dll');
+//      stream := TBytesStream.Create(FileBytes);
+//      try
+//        stream.SaveToFile('pigheader.dll');
+//      finally
+//        stream.Free;
+//      end;
+//      ClientModule1.SQLConnection1.Connected := False;
+//      ShowMessage('已更新程序,请重新启动程序');
+//      Application.Terminate;
+   // end;
+    ClientModule1.SQLConnection1.Close;
+  end;
+
 begin
   ReportMemoryLeaksOnShutdown := Boolean(DebugHook);
   PluginsManager.Loaders.Add
     (TQDLLLoader.Create('.\', '.dll'));
   PluginsManager.Start;
+  UpdataModule;
   GameService := PluginsManager.ById(IGameService) as IGameService;
   ConfigForm := PluginsManager.ByPath('Services/Form/Config') as IQFormService;
   GameService.Prepare;
