@@ -38,7 +38,7 @@ type
     GameService: IGameService;
     ConfigForm: TForm;
     hdll: HMODULE;
-    procedure Updata;
+    procedure UpdataLib;
     procedure LoadLib;
   end;
 
@@ -87,7 +87,7 @@ end;
 
 procedure TForm3.FormShow(Sender: TObject);
 begin
-  Updata;
+  UpdataLib;
   LoadLib;
   TTask.Run(
     procedure
@@ -125,7 +125,7 @@ error:
 
 end;
 
-procedure TForm3.Updata;
+procedure TForm3.UpdataLib;
 var
   stream: TBytesStream;
   curVersion: string;
@@ -133,31 +133,36 @@ var
   suc: Boolean;
 begin
   curVersion := TFileVersionInfo.GetVersionInfo('pigheader.dll').FileVersion;
-  if not ClientModule1.ServerMethods1Client.GetReleaseVersion(curVersion) then
-  begin
-    suc := False;
-    ShowMessage('有新版本需要更新');
-    task := TTask.Run(
-      procedure
-      begin
-        stream := (TDBXJSONTools.JSONToStream
-          (ClientModule1.ServerMethods1Client.GetDllFile)) as TBytesStream;
-        stream.SaveToFile('.\pigheader.dll');
-        stream.Free;
-        suc := True;
-      end);
-    form2 := TForm2.Create(nil);
-    form2.Show;
-    while not suc do
+  try
+    if not ClientModule1.ServerMethods1Client.GetReleaseVersion(curVersion) then
     begin
-      Application.ProcessMessages;
-      Sleep(10);
+      suc := False;
+      ShowMessage('有新版本需要更新');
+      task := TTask.Run(
+        procedure
+        begin
+          stream := (TDBXJSONTools.JSONToStream
+            (ClientModule1.ServerMethods1Client.GetDllFile)) as TBytesStream;
+          stream.SaveToFile('.\pigheader.dll');
+          stream.Free;
+          suc := True;
+        end);
+      form2 := TForm2.Create(nil);
+      form2.Show;
+      while not suc do
+      begin
+        Application.ProcessMessages;
+        Sleep(10);
+      end;
+      form2.Free;
+      // ShowMessage('更新完毕');
+      ClientModule1.SQLConnection1.Close;
     end;
-    form2.Free;
-    ShowMessage('更新完毕');
-    ClientModule1.SQLConnection1.Close;
+    stat1.Panels[2].Text := curVersion; // 设置版本信息
+  except
+    stat1.Panels[2].Text := curVersion; // 设置版本信息
   end;
-  stat1.Panels[2].Text := curVersion; // 设置版本信息
+
 end;
 
 initialization

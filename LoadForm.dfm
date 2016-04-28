@@ -21,7 +21,7 @@ object Form2: TForm2
     Width = 400
     Height = 33
     Align = alClient
-    Max = 400
+    Max = 500
     TabOrder = 0
   end
   object tmr1: TTimer
