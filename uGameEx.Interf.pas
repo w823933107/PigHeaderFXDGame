@@ -557,7 +557,10 @@ begin
     Result := True
   else
   begin
-    iRet := Obj.FindStr(9, 514, 67, 577, '100', clStrWhite, 1.0, x, y);
+    // 11,522,73,584
+    // iRet := Obj.FindStr(9, 514, 67, 577, '100', clStrWhite, 1.0, x, y);
+    iRet := Obj.FindPic(11, 522, 73, 584, '100%.bmp', clPicOffsetZero,
+      1.0, 0, x, y);
     Result := iRet = -1;
   end;
 end;

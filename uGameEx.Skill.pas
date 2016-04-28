@@ -665,7 +665,7 @@ begin
   begin
     // 死灵处理
     // slNigulasi; // 先执行这个
-    // slQushijiangshi; // 再执行这个次序不可逆
+    // slQushijiangshi; // 再执行这个次序不可逆 ,因为有时间检测
     // slBaojunbalake;
     // slAnyingzhizhusi;
     // slAnheiyishi;
