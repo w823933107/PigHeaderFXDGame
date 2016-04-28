@@ -48,8 +48,8 @@ type
   private
     // 图外的相关任务
     procedure DoOutMapTask;
-    procedure DoGoToInMapTask;
-    procedure DoChangeRoleTask;
+    procedure DoGoToInMapTask; // 进图任务
+    procedure DoChangeRoleTask; // 换角色任务
     procedure DoWeakTask;
     // 图内相关任务
     procedure DoInNormalMapTask;
@@ -249,7 +249,7 @@ begin
       begin
         if swMan.IsRunning then
         begin
-          if swMan.ElapsedMilliseconds > 1000 * 5 then // 3秒位置没变进行随机移动
+          if swMan.ElapsedMilliseconds > 1000 * 5 then // 5秒位置没变进行随机移动
           begin
             FMove.StopMove;
             FSkill.DestroyBarrier;
@@ -359,7 +359,7 @@ begin
       begin
         if swMan.IsRunning then
         begin
-          if swMan.ElapsedMilliseconds > 1000 * 5 then // 3秒位置没变进行随机移动
+          if swMan.ElapsedMilliseconds > 1000 * 5 then // 5秒位置没变进行随机移动
           begin
             FMove.StopMove;
             FSkill.DestroyBarrier;
@@ -452,7 +452,6 @@ begin
 
   FObj.SetDict(0, sDictPath); // 设置字库
   FObj.SetPath(sPicPath); // 设置路径
-  // // 创建配置管理器
 
 end;
 
@@ -784,7 +783,7 @@ var
         '普通.bmp|冒险.bmp|勇士.bmp|王者.bmp', clPicOffsetZero, 0.9, 0, x, y);
       if iRet > -1 then
       begin
-        with GameData.GameConfig do
+        with GameData^.GameConfig do
         begin
           if iRet = iMapLv then
           begin
@@ -797,7 +796,9 @@ var
               end
               else
               begin
-                FObj.KeyPressChar('space');
+                FObj.KeyDownChar('space');
+                Sleep(100);
+                FObj.KeyUpChar('space');
                 Sleep(500);
               end;
 
@@ -1002,7 +1003,7 @@ end;
 
 procedure TGame.UnknownMapHandle;
 begin
-
+  CloseGameWindows;
 end;
 
 initialization

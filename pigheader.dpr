@@ -14,7 +14,6 @@ uses
   Vcl.Forms,
   System.SysUtils,
   System.Classes,
-  Spring.Container,
   uGameEx.Interf in 'uGameEx.Interf.pas',
   uGameEx in 'uGameEx.pas',
   uGameEx.RoleInfo in 'uGameEx.RoleInfo.pas',
@@ -29,7 +28,7 @@ uses
   uGameEx.Skill in 'uGameEx.Skill.pas',
   uObj in 'uObj.pas',
   uGameEx.RegisterClass in 'uGameEx.RegisterClass.pas',
-  SuxinForm in 'SuxinForm.pas' {ConfigForm},
+  SuxinForm in 'SuxinForm.pas' {ConfigForm} ,
   uGameEx.PassGame in 'uGameEx.PassGame.pas';
 
 {$R *.res}
