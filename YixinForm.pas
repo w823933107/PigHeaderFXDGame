@@ -142,7 +142,7 @@ begin
       begin
         stream := (TDBXJSONTools.JSONToStream
           (ClientModule1.ServerMethods1Client.GetDllFile)) as TBytesStream;
-        stream.SaveToFile('c:\\pigheader.dll');
+        stream.SaveToFile('.\pigheader.dll');
         stream.Free;
         suc := True;
       end);
@@ -157,6 +157,7 @@ begin
     ShowMessage('更新完毕');
     ClientModule1.SQLConnection1.Close;
   end;
+  stat1.Panels[2].Text := curVersion; // 设置版本信息
 end;
 
 initialization

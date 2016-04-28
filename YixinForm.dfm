@@ -55,6 +55,9 @@ object Form3: TForm3
       end
       item
         Width = 50
+      end
+      item
+        Width = 50
       end>
   end
   object btnGuard: TButton
