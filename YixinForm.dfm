@@ -12,8 +12,8 @@ object Form3: TForm3
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
-  OnCreate = FormCreate
-  OnDestroy = FormDestroy
+  OnClose = FormClose
+  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
   object btn1: TButton

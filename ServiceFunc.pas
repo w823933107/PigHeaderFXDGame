@@ -1,13 +1,13 @@
 //
 // Created by the DataSnap proxy generator.
-// 2016/4/27 15:04:18
+// 2016/4/28 9:55:47
 //
 
 unit ServiceFunc;
 
 interface
 
-uses System.JSON, Data.DBXCommon, Datasnap.DSProxy, System.Classes, System.SysUtils;
+uses System.JSON, Data.DBXCommon, Data.DBXClient, Data.DBXDataSnap, Data.DBXJSON, Datasnap.DSProxy, System.Classes, System.SysUtils, Data.DB, Data.SqlExpr, Data.DBXDBReaders, Data.DBXCDSReaders, Data.DBXJSONReflect;
 
 type
   TServerMethods1Client = class(TDSAdminClient)
@@ -22,7 +22,7 @@ type
     destructor Destroy; override;
     function EchoString(Value: string): string;
     function ReverseString(Value: string): string;
-    function GetReleaseVersion(var aVersion: Byte): Boolean;
+    function GetReleaseVersion(var aversion: string): Boolean;
     function GetDllFile: TJSONArray;
   end;
 
@@ -56,7 +56,7 @@ begin
   Result := FReverseStringCommand.Parameters[1].Value.GetWideString;
 end;
 
-function TServerMethods1Client.GetReleaseVersion(var aVersion: Byte): Boolean;
+function TServerMethods1Client.GetReleaseVersion(var aversion: string): Boolean;
 begin
   if FGetReleaseVersionCommand = nil then
   begin
@@ -65,9 +65,9 @@ begin
     FGetReleaseVersionCommand.Text := 'TServerMethods1.GetReleaseVersion';
     FGetReleaseVersionCommand.Prepare;
   end;
-  FGetReleaseVersionCommand.Parameters[0].Value.SetUInt8(aVersion);
+  FGetReleaseVersionCommand.Parameters[0].Value.SetWideString(aversion);
   FGetReleaseVersionCommand.ExecuteUpdate;
-  aVersion := FGetReleaseVersionCommand.Parameters[0].Value.GetUInt8;
+  aversion := FGetReleaseVersionCommand.Parameters[0].Value.GetWideString;
   Result := FGetReleaseVersionCommand.Parameters[1].Value.GetBoolean;
 end;
 

@@ -88,6 +88,8 @@
         <DCC_DebugInformation>0</DCC_DebugInformation>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <VerInfo_Locale>1033</VerInfo_Locale>
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <AppEnableHighDPI>true</AppEnableHighDPI>
     </PropertyGroup>
@@ -99,13 +101,16 @@
             <Form>Form3</Form>
             <FormType>dfm</FormType>
         </DCCReference>
-        <DCCReference Include="ClientClassesUnit1.pas"/>
         <DCCReference Include="ClientModuleUnit1.pas">
             <Form>ClientModule1</Form>
             <FormType>dfm</FormType>
             <DesignClass>TDataModule</DesignClass>
         </DCCReference>
         <DCCReference Include="ServiceFunc.pas"/>
+        <DCCReference Include="LoadForm.pas">
+            <Form>Form2</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
@@ -536,7 +541,6 @@
             </Platforms>
             <DataSnapProxyLookup>
                 <ServiceFunc>{1E2DED18-D0E4-4D28-88C0-6083E99240E8}</ServiceFunc>
-                <ClientClassesUnit1>{76A6784C-16AB-4465-9123-066224A53CC8}</ClientClassesUnit1>
             </DataSnapProxyLookup>
         </BorlandProject>
         <ProjectFileVersion>12</ProjectFileVersion>

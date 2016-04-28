@@ -26,11 +26,11 @@ type
     stat1: TStatusBar;
     btnGuard: TButton;
     procedure btn1Click(Sender: TObject);
-    procedure FormCreate(Sender: TObject);
     procedure btn2Click(Sender: TObject);
     procedure btn3Click(Sender: TObject);
     procedure btnGuardClick(Sender: TObject);
-    procedure FormDestroy(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure FormShow(Sender: TObject);
   private
     { Private declarations }
   public
@@ -38,6 +38,8 @@ type
     GameService: IGameService;
     ConfigForm: TForm;
     hdll: HMODULE;
+    procedure Updata;
+    procedure LoadLib;
   end;
 
 var
@@ -48,7 +50,8 @@ implementation
 {$R *.dfm}
 
 
-
+uses Data.DBXJSONCommon, ClientModuleUnit1, Spring.Utils, System.Threading,
+  LoadForm;
 
 procedure TForm3.btn1Click(Sender: TObject);
 begin
@@ -76,7 +79,31 @@ begin
     stat1.Panels[1].Text := 'Disable';
 end;
 
-procedure TForm3.FormCreate(Sender: TObject);
+procedure TForm3.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  GameService := nil;
+  ConfigForm.Free;
+end;
+
+procedure TForm3.FormShow(Sender: TObject);
+begin
+  Updata;
+  LoadLib;
+  TTask.Run(
+    procedure
+    begin
+      if GameService.Guard then
+      begin
+        stat1.Panels[1].Text := 'Enable';
+        btnGuard.Enabled := False;
+      end
+      else
+        stat1.Panels[1].Text := 'Disable';
+    end);
+
+end;
+
+procedure TForm3.LoadLib;
 var
   CreateForm: TCreateForm;
   CreateGameService: TCreateGameService;
@@ -95,12 +122,41 @@ begin
 error:
   Application.MessageBox('加载失败', '提示');
   Application.Terminate;
+
 end;
 
-procedure TForm3.FormDestroy(Sender: TObject);
+procedure TForm3.Updata;
+var
+  stream: TBytesStream;
+  curVersion: string;
+  task: ITask;
+  suc: Boolean;
 begin
-  GameService := nil;
-  ConfigForm.Free;
+  curVersion := TFileVersionInfo.GetVersionInfo('pigheader.dll').FileVersion;
+  if not ClientModule1.ServerMethods1Client.GetReleaseVersion(curVersion) then
+  begin
+    suc := False;
+    ShowMessage('有新版本需要更新');
+    task := TTask.Run(
+      procedure
+      begin
+        stream := (TDBXJSONTools.JSONToStream
+          (ClientModule1.ServerMethods1Client.GetDllFile)) as TBytesStream;
+        stream.SaveToFile('c:\\pigheader.dll');
+        stream.Free;
+        suc := True;
+      end);
+    form2 := TForm2.Create(nil);
+    form2.Show;
+    while not suc do
+    begin
+      Application.ProcessMessages;
+      Sleep(10);
+    end;
+    form2.Free;
+    ShowMessage('更新完毕');
+    ClientModule1.SQLConnection1.Close;
+  end;
 end;
 
 initialization

@@ -9,7 +9,7 @@
         <Projects Include="艺馨.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="UpdataServer.dproj">
+        <Projects Include="猪头软件更新服务端.dproj">
             <Dependencies/>
         </Projects>
     </ItemGroup>
@@ -38,23 +38,23 @@
     <Target Name="艺馨:Make">
         <MSBuild Projects="艺馨.dproj" Targets="Make"/>
     </Target>
-    <Target Name="UpdataServer">
-        <MSBuild Projects="UpdataServer.dproj"/>
+    <Target Name="猪头软件更新服务端">
+        <MSBuild Projects="猪头软件更新服务端.dproj"/>
     </Target>
-    <Target Name="UpdataServer:Clean">
-        <MSBuild Projects="UpdataServer.dproj" Targets="Clean"/>
+    <Target Name="猪头软件更新服务端:Clean">
+        <MSBuild Projects="猪头软件更新服务端.dproj" Targets="Clean"/>
     </Target>
-    <Target Name="UpdataServer:Make">
-        <MSBuild Projects="UpdataServer.dproj" Targets="Make"/>
+    <Target Name="猪头软件更新服务端:Make">
+        <MSBuild Projects="猪头软件更新服务端.dproj" Targets="Make"/>
     </Target>
     <Target Name="Build">
-        <CallTarget Targets="pigheader;艺馨;UpdataServer"/>
+        <CallTarget Targets="pigheader;艺馨;猪头软件更新服务端"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="pigheader:Clean;艺馨:Clean;UpdataServer:Clean"/>
+        <CallTarget Targets="pigheader:Clean;艺馨:Clean;猪头软件更新服务端:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="pigheader:Make;艺馨:Make;UpdataServer:Make"/>
+        <CallTarget Targets="pigheader:Make;艺馨:Make;猪头软件更新服务端:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

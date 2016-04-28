@@ -3,9 +3,9 @@ program “’‹∞;
 uses
   Vcl.Forms,
   YixinForm in 'YixinForm.pas' {Form3},
-  ClientClassesUnit1 in 'ClientClassesUnit1.pas',
   ClientModuleUnit1 in 'ClientModuleUnit1.pas' {ClientModule1: TDataModule},
-  ServiceFunc in 'ServiceFunc.pas';
+  ServiceFunc in 'ServiceFunc.pas',
+  LoadForm in 'LoadForm.pas' {Form2};
 
 {$R *.res}
 

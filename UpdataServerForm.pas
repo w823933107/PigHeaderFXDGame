@@ -3,11 +3,12 @@ unit UpdataServerForm;
 interface
 
 uses Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
-  System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs;
+  System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
+  Vcl.StdCtrls;
 
 type
   TForm1 = class(TForm)
-    procedure FormCreate(Sender: TObject);
+    lbl1: TLabel;
   private
     { Private declarations }
   public
@@ -21,12 +22,7 @@ implementation
 
 {$R *.dfm}
 
-uses QPlugins, qplugins_loader_lib;
 
-procedure TForm1.FormCreate(Sender: TObject);
-begin
-  PluginsManager.Loaders.Add(TQDLLLoader.Create('.\', '.dll'));
-  PluginsManager.Start;
-end;
+
 
 end.

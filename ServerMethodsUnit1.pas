@@ -3,8 +3,7 @@ unit ServerMethodsUnit1;
 interface
 
 uses System.SysUtils, System.Classes, System.Json,
-  Datasnap.DSProviderDataModuleAdapter,
-  QPlugins;
+  Datasnap.DSProviderDataModuleAdapter;
 
 type
   TServerMethods1 = class(TDSServerModule)
@@ -14,9 +13,8 @@ type
     { Public declarations }
     function EchoString(Value: string): string;
     function ReverseString(Value: string): string;
-    function GetReleaseVersion(var aVersion: Byte): Boolean;
+    function GetReleaseVersion(var aversion: string): Boolean;
     function GetDllFile: TJSONArray;
-
   end;
 
 implementation
@@ -25,7 +23,7 @@ implementation
 {$R *.dfm}
 
 
-uses System.StrUtils;
+uses System.StrUtils, Spring.Utils, Data.DBXJSONCommon;
 
 function TServerMethods1.EchoString(Value: string): string;
 begin
@@ -41,22 +39,20 @@ begin
   stream := TBytesStream.Create();
   try
     stream.LoadFromFile('pigheader.dll');
-    for I := Low(stream.Bytes) to High(stream.Bytes) do
-    begin
-      Result.Add(stream.Bytes[I]);
-    end;
+    stream.Position := 0;
+    Result := TDBXJSONTools.StreamToJSON(stream, 0, stream.Size);
   finally
     stream.Free;
   end;
 end;
 
-function TServerMethods1.GetReleaseVersion(var aVersion: Byte): Boolean;
+function TServerMethods1.GetReleaseVersion(var aversion: string): Boolean;
 var
-  version: TQVersion;
+  version: string;
 begin
-  (PluginsManager.ById(iqversion) as iqversion).GetVersion(Version);
-  Result := version.version.Release = aVersion;
-  aVersion := version.version.Release;
+  version := TFileVersionInfo.GetVersionInfo('pigheader.dll').FileVersion;
+  Result := aversion = version;
+  aversion := version;
 end;
 
 function TServerMethods1.ReverseString(Value: string): string;
