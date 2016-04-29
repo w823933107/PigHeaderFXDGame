@@ -1003,7 +1003,7 @@ end;
 
 procedure TGame.UnknownMapHandle;
 begin
-  CloseGameWindows;
+//  CloseGameWindows;
 end;
 
 initialization

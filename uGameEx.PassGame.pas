@@ -96,7 +96,7 @@ var
   iRet: Integer;
   x, y: OleVariant;
 begin
-  iRet := Obj.FindPic(424, 419, 723, 535, '负重条.bmp|负重条1.bmp', clPicOffsetZero,
+  iRet := Obj.FindPic(200, 200, 800, 600, '负重条.bmp|负重条1.bmp', clPicOffsetZero,
     0.9, 0, x, y);
   Result := iRet > -1;
 
@@ -241,6 +241,7 @@ begin
         Obj.LeftClick;
         Sleep(500);
         MoveToFixPoint;
+        Sleep(100);
       end;
     end;
 
@@ -386,7 +387,7 @@ begin
         TTask.CurrentTask.CheckCanceled;
         if IsFindSell then
         begin
-          Sleep(500);
+          Sleep(1000);
           // 发现出售
           // 粉装处理
           FenZhuangHandle;
@@ -430,7 +431,7 @@ end;
 
 function TPassGame.IsFindSell: Boolean;
 begin
-  Result := Obj.FindStr(28, 439, 350, 560, '出售', StrColorOffset('ddc593'), 1.0,
+  Result := Obj.FindStr(28, 200, 400, 600, '出售', StrColorOffset('ddc593'), 1.0,
     FSellX, FSellY) <> -1;
   inc(FSellX, 9);
   dec(FSellY, 29);
